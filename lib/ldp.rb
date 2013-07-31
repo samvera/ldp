@@ -3,16 +3,32 @@ require 'ldp/version'
 module Ldp
   require 'ldp/client'
 
+  def self.uri str
+    RDF::URI.new("http://www.w3.org/ns/ldp#") + str
+  end
+
   def self.resource
-    RDF::URI.new("http://www.w3.org/ns/ldp/Resource")
+    uri("Resource")
   end
 
   def self.container
-    RDF::URI.new("http://www.w3.org/ns/ldp/Container")
+    uri("Container")
+  end
+
+  def self.page
+    uri("Page")
+  end
+
+  def self.page_of
+    uri("pageOf")
+  end
+
+  def self.next_page
+    uri("nextPage")
   end
 
   def self.inlinedResource
-    RDF::URI.new("http://www.w3.org/ns/ldp/inlinedResource")
+    uri("inlinedResource")
   end
 
   autoload :Response, 'ldp/response'
