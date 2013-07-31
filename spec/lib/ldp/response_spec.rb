@@ -57,7 +57,7 @@ describe Ldp::Response do
   describe "#graph" do
     it "should parse the response body for an RDF graph" do
       mock_response.stub :body => "<> <b> <c>"
-      subject.stub :subject => RDF::URI.new('a')
+      subject.stub :page_subject => RDF::URI.new('a')
       graph = subject.graph
 
       expect(graph).to have_subject(RDF::URI.new("a")) 
@@ -66,8 +66,60 @@ describe Ldp::Response do
     end
   end
 
+  describe "#etag" do
+    it "should pass through the response's ETag" do
+      mock_response.stub :headers => { 'ETag' => 'xyz'}
+
+      expect(subject.etag).to eq('xyz')
+    end
+  end
+
+  describe "#last_modified" do
+    it "should pass through the response's Last-Modified" do
+      mock_response.stub :headers => { 'Last-Modified' => 'some-date'}
+      expect(subject.last_modified).to eq('some-date')
+    end
+  end
+
+  describe "#has_page" do
+    it "should see if the response has an ldp:Page statement" do
+      graph = RDF::Graph.new
+
+      subject.stub :page_subject => RDF::URI.new('a')
+
+      graph << [RDF::URI.new('a'), RDF.type, Ldp.page]
+
+      mock_response.stub :body => graph.dump(:ttl)
+
+      expect(subject).to have_page
+    end
+
+    it "should be false otherwise" do
+      subject.stub :page_subject => RDF::URI.new('a')
+      mock_response.stub :body => ''
+      expect(subject).not_to have_page
+    end
+  end
+
+  describe "#page" do
+    it "should get the ldp:Page data from the query" do
+      graph = RDF::Graph.new
+
+      subject.stub :page_subject => RDF::URI.new('a')
+
+      graph << [RDF::URI.new('a'), RDF.type, Ldp.page]
+      graph << [RDF::URI.new('b'), RDF.type, Ldp.page]
+
+      mock_response.stub :body => graph.dump(:ttl)
+
+      expect(subject.page.count).to eq(1)
+   
+    end
+  end
+
   describe "#subject" do
     it "should extract the HTTP request URI as an RDF URI" do
+      mock_response.stub :body => ''
       mock_response.stub :env => { :url => 'a'}
       expect(subject.subject).to eq(RDF::URI.new("a"))
     end

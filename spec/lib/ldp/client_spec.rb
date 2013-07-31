@@ -6,6 +6,14 @@ describe "Ldp::Client" do
       graph.dump(:ttl)
     end
 
+
+    let(:paginatedGraph) do
+      graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
+      graph << [RDF::URI.new("?firstPage"), RDF.type, Ldp.page]
+      graph << [RDF::URI.new("?firstPage"), Ldp.page_of, RDF::URI.new("")]
+      graph.dump(:ttl)
+    end
+
     let(:simple_container_graph) do
       graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, Ldp.container]
       graph.dump(:ttl)
@@ -13,8 +21,8 @@ describe "Ldp::Client" do
 
     let(:conn_stubs) do
       stubs = Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp/Resource;rel=\"type\""}, simple_graph ]}
-        stub.get('/a_container') {[ 200, {"Link" => "http://www.w3.org/ns/ldp/Resource;rel=\"type\""}, simple_container_graph ]}
+        stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
+        stub.get('/a_container') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_container_graph ]}
         stub.put("/a_resource") { [204]}
         stub.delete("/a_resource") { [204]}
         stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}

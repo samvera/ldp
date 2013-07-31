@@ -37,7 +37,7 @@ module Ldp
     def delete
       client.delete subject do |req|
         if @get
-          req.headers['If-Match'] << get.headers['ETag']
+          req.headers['If-Match'] = get.headers['ETag']
         end
       end
 
@@ -48,7 +48,7 @@ module Ldp
     def update
       client.put subject, graph.dump(:ttl) do |req|
         if @get
-          req.headers['If-Match'] << get.headers['ETag']
+          req.headers['If-Match'] = get.headers['ETag']
         end
       end
       @get = nil

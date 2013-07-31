@@ -31,6 +31,10 @@ module Ldp
     uri("inlinedResource")
   end
 
+  def self.membership_predicate
+    uri("membershipPredicate")
+  end
+
   autoload :Response, 'ldp/response'
   autoload :Resource, 'ldp/resource'
   autoload :Container, 'ldp/container'
