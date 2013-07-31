@@ -1,12 +1,14 @@
-# Ldp::Client
+# Ldp.rb
 
-TODO: Write a gem description
+[![Build Status](https://travis-ci.org/cbeer/ldp.png?branch=master)](https://travis-ci.org/cbeer/ldp)
+
+Linked Data Platform client library for Ruby
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'ldp-client'
+    gem 'ldp'
 
 And then execute:
 
@@ -14,11 +16,10 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install ldp-client
+    $ gem install ldp
 
 ## Usage
 
-TODO: Write usage instructions here
 
 ## Contributing
 
