@@ -48,7 +48,7 @@ module Ldp
       end
     end
 
-    def post url, body
+    def post url, body = nil
       http.post do |req|
         req.url url
         req.headers['Content-Type'] = 'text/turtle'

@@ -15,7 +15,9 @@ describe "Ldp::Client" do
       stubs = Faraday::Adapter::Test::Stubs.new do |stub|
         stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp/Resource;rel=\"type\""}, simple_graph ]}
         stub.get('/a_container') {[ 200, {"Link" => "http://www.w3.org/ns/ldp/Resource;rel=\"type\""}, simple_container_graph ]}
-      
+        stub.put("/a_resource") { [204]}
+        stub.delete("/a_resource") { [204]}
+        stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
       end
     end
 
@@ -53,10 +55,47 @@ describe "Ldp::Client" do
       expect(resp.resource?).to be_true
     end
 
-    describe "response" do
-
+    it "should accept a block to change the HTTP request" do
+      expect { |b| subject.get "a_resource", &b }.to yield_control
     end
   end
+
+  describe "delete" do
+    it "should DELETE the subject from the HTTP endpoint" do
+      resp = subject.delete "a_resource"
+      expect(resp.status).to eq(204)
+    end
+
+    it "should accept a block to change the HTTP request" do
+      expect { |b| subject.delete "a_resource", &b }.to yield_control
+    end
+  end
+
+  describe "post" do
+
+    it "should POST to the subject at the HTTP endpoint" do
+      resp = subject.post "a_container"
+      expect(resp.status).to eq(201)
+      expect(resp.headers[:Location]).to eq("http://example.com/a_container/subresource")
+    end
+
+    it "should accept a block to change the HTTP request" do
+      expect { |b| subject.post "a_container", &b }.to yield_control
+    end
+
+  end
+
+  describe "put" do
+    it "should PUT content to the subject at the HTTP endpoint" do
+      resp = subject.put "a_resource", "some-payload"
+      expect(resp.status).to eq(204)
+    end
+
+    it "should accept a block to change the HTTP request" do
+      expect { |b| subject.put "a_resource", "some-payload", &b }.to yield_control
+    end
+  end
+
 
   describe "find_or_initialize" do
     it "should be a resource" do
