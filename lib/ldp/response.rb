@@ -7,11 +7,11 @@ module Ldp
     end
 
     def self.links raw_resp
-      Array(raw_resp.headers["Link"]).inject({}) do |memo, header|
+      h = Hash.new { |hash, key| hash[key] = [] }
+      Array(raw_resp.headers["Link"]).inject(h) do |memo, header|
         v = header.scan(/(.*);\s?rel="([^"]+)"/)
 
         if v.length == 1
-          memo[v.first.last] ||= []
           memo[v.first.last] << v.first.first
         end
 
@@ -20,7 +20,7 @@ module Ldp
     end
 
     def self.resource? raw_resp
-      links(raw_resp).fetch("type", []).include? Ldp.resource
+      links(raw_resp).fetch("type").include? Ldp.resource
     end
 
     def ldp_client= client
