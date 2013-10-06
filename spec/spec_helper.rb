@@ -5,6 +5,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'rspec/autorun'
 require 'ldp'
 require 'faraday'
+
 RSpec.configure do |config|
 
 end

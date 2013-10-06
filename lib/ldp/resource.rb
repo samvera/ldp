@@ -8,17 +8,25 @@ module Ldp
       @get = data
     end
 
+    def subject_uri
+      @subject_uri ||= RDF::URI.new subject
+    end
+
+    def reload
+      Ldp::Resource.new client, subject
+    end
+
     def graph
       @graph ||= begin
         original_graph = get.graph
 
         inlinedResources = get.graph.query(:predicate => Ldp.inlinedResource).map { |x| x.object }
 
-        unless inlinedResource.empty?
+        unless inlinedResources.empty?
           new_graph = RDF::Graph.new
 
           original_graph.each_statement do |s|
-            unless inlinedResource.include? s.subject
+            unless inlinedResources.include? s.subject
               new_graph << s
             end
           end
@@ -37,22 +45,18 @@ module Ldp
     def delete
       client.delete subject do |req|
         if @get
-          req.headers['If-Match'] = get.headers['ETag']
+          req.headers['If-Match'] = get.etag
         end
       end
-
-      @get = nil
-      @graph = nil
     end
 
-    def update
-      client.put subject, graph.dump(:ttl) do |req|
+    def update new_graph = nil
+      new_graph ||= graph
+      client.put subject, new_graph.dump(:ttl) do |req|
         if @get
-          req.headers['If-Match'] = get.headers['ETag']
+          req.headers['If-Match'] = get.etag
         end
       end
-      @get = nil
-      @graph = nil
     end
   end
 end

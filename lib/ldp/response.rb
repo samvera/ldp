@@ -55,7 +55,7 @@ module Ldp
 
     def page
       @page_graph ||= begin
-        g = RDF::Graph.new
+        g = RDF::Graph.new  
 
         res = graph.query RDF::Statement.new(page_subject, nil, nil)
 

@@ -1,5 +1,4 @@
 require 'faraday'
-require 'linkeddata'
 
 module Ldp
   class Client
