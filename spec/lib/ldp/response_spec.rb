@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Ldp::Response do
+  LDP_RESOURCE_HEADERS = { "Link" => Ldp.resource.to_s + ";rel=\"type\""}
 
   let(:mock_response) { double() }
   let(:mock_client) { double(Ldp::Client) }
@@ -56,7 +57,7 @@ describe Ldp::Response do
 
   describe "#graph" do
     it "should parse the response body for an RDF graph" do
-      mock_response.stub :body => "<> <b> <c>"
+      mock_response.stub :body => "<> <b> <c>", :headers => LDP_RESOURCE_HEADERS
       subject.stub :page_subject => RDF::URI.new('a')
       graph = subject.graph
 
@@ -89,14 +90,14 @@ describe Ldp::Response do
 
       graph << [RDF::URI.new('a'), RDF.type, Ldp.page]
 
-      mock_response.stub :body => graph.dump(:ttl)
+      mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
 
       expect(subject).to have_page
     end
 
     it "should be false otherwise" do
       subject.stub :page_subject => RDF::URI.new('a')
-      mock_response.stub :body => ''
+      mock_response.stub :body => '', :headers => LDP_RESOURCE_HEADERS
       expect(subject).not_to have_page
     end
   end
@@ -110,7 +111,7 @@ describe Ldp::Response do
       graph << [RDF::URI.new('a'), RDF.type, Ldp.page]
       graph << [RDF::URI.new('b'), RDF.type, Ldp.page]
 
-      mock_response.stub :body => graph.dump(:ttl)
+      mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
 
       expect(subject.page.count).to eq(1)
    
@@ -119,7 +120,7 @@ describe Ldp::Response do
 
   describe "#subject" do
     it "should extract the HTTP request URI as an RDF URI" do
-      mock_response.stub :body => ''
+      mock_response.stub :body => '', :headers => LDP_RESOURCE_HEADERS
       mock_response.stub :env => { :url => 'a'}
       expect(subject.subject).to eq(RDF::URI.new("a"))
     end

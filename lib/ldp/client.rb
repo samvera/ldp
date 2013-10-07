@@ -17,10 +17,11 @@ module Ldp
       end
     end
 
+    # Find or initialize a new LDP resource by URI
     def find_or_initialize subject
       data = get(subject)
 
-      if !data.is_a? Response
+      unless data.is_a? Response
         raise "#{subject} is not an LDP Resource"
       end
 
