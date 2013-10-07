@@ -2,6 +2,10 @@ require 'faraday'
 
 module Ldp
   class Client
+
+    require 'ldp/client/methods'
+
+    include Ldp::Client::Methods
     
     attr_reader :http
 
@@ -24,44 +28,6 @@ module Ldp
         Container.new self, subject, data
       else  
         Resource.new self, subject, data
-      end
-    end
-
-    def get url
-      resp = http.get do |req|                          
-        req.url url
-        yield req if block_given?
-      end
-
-      if Response.resource? resp
-        Response.wrap self, resp
-      else
-        resp
-      end
-    end
-
-    def delete url
-      http.delete do |req|
-        req.url url
-        yield req if block_given?
-      end
-    end
-
-    def post url, body = nil
-      http.post do |req|
-        req.url url
-        req.headers['Content-Type'] = 'text/turtle'
-        req.body = body
-        yield req if block_given?
-      end
-    end
-
-    def put url, body
-      http.put do |req|
-        req.url url
-        req.headers['Content-Type'] = 'text/turtle'
-        req.body = body
-        yield req if block_given?
       end
     end
 
