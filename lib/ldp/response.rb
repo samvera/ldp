@@ -13,7 +13,7 @@ module Ldp
     # Extract the Link: headers from the HTTP resource
     def self.links raw_resp
       h = Hash.new { |hash, key| hash[key] = [] }
-      Array(raw_resp.headers["Link"]).inject(h) do |memo, header|
+      Array(raw_resp.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
         v = header.scan(/(.*);\s?rel="([^"]+)"/)
 
         if v.length == 1
