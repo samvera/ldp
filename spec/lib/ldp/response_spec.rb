@@ -57,12 +57,12 @@ describe Ldp::Response do
 
   describe "#graph" do
     it "should parse the response body for an RDF graph" do
-      mock_response.stub :body => "<> <b> <c>", :headers => LDP_RESOURCE_HEADERS
-      subject.stub :page_subject => RDF::URI.new('a')
+      mock_response.stub :body => "<> <info:b> <info:c>", :headers => LDP_RESOURCE_HEADERS
+      subject.stub :page_subject => RDF::URI.new('info:a')
       graph = subject.graph
-
-      expect(graph).to have_subject(RDF::URI.new("a")) 
-      expect(graph).to have_statement RDF::Statement.new(RDF::URI.new("a"), RDF::URI.new("b"), RDF::URI.new("c"))
+     
+      expect(graph).to have_subject(RDF::URI.new("info:a")) 
+      expect(graph).to have_statement RDF::Statement.new(RDF::URI.new("info:a"), RDF::URI.new("info:b"), RDF::URI.new("info:c"))
 
     end
   end
@@ -86,9 +86,9 @@ describe Ldp::Response do
     it "should see if the response has an ldp:Page statement" do
       graph = RDF::Graph.new
 
-      subject.stub :page_subject => RDF::URI.new('a')
+      subject.stub :page_subject => RDF::URI.new('info:a')
 
-      graph << [RDF::URI.new('a'), RDF.type, Ldp.page]
+      graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
 
       mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
 
@@ -96,7 +96,7 @@ describe Ldp::Response do
     end
 
     it "should be false otherwise" do
-      subject.stub :page_subject => RDF::URI.new('a')
+      subject.stub :page_subject => RDF::URI.new('info:a')
       mock_response.stub :body => '', :headers => LDP_RESOURCE_HEADERS
       expect(subject).not_to have_page
     end
@@ -106,10 +106,10 @@ describe Ldp::Response do
     it "should get the ldp:Page data from the query" do
       graph = RDF::Graph.new
 
-      subject.stub :page_subject => RDF::URI.new('a')
+      subject.stub :page_subject => RDF::URI.new('info:a')
 
-      graph << [RDF::URI.new('a'), RDF.type, Ldp.page]
-      graph << [RDF::URI.new('b'), RDF.type, Ldp.page]
+      graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
+      graph << [RDF::URI.new('info:b'), RDF.type, Ldp.page]
 
       mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
 
@@ -121,8 +121,8 @@ describe Ldp::Response do
   describe "#subject" do
     it "should extract the HTTP request URI as an RDF URI" do
       mock_response.stub :body => '', :headers => LDP_RESOURCE_HEADERS
-      mock_response.stub :env => { :url => 'a'}
-      expect(subject.subject).to eq(RDF::URI.new("a"))
+      mock_response.stub :env => { :url => 'http://xyz/a'}
+      expect(subject.subject).to eq(RDF::URI.new("http://xyz/a"))
     end
   end
 end
