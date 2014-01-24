@@ -27,7 +27,7 @@ module Ldp
     ##
     # Is the response an LDP resource?
     def self.resource? raw_resp
-      links(raw_resp).fetch("type", []).include? Ldp.resource
+      links(raw_resp).fetch("type", []).include? Ldp.resource.to_s
     end
 
     ##
