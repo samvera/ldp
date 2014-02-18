@@ -20,6 +20,27 @@ Or install it yourself as:
 
 ## Usage
 
+```ruby
+host = 'http://localhost:8080'
+client = Ldp::Client.new(host)
+resource = Ldp::Resource.new(client, host + '/rest/node/to/update')
+orm = Ldp::Orm.new(resource)
+
+# view the current title(s)
+orm.graph.query([orm.resource.subject_uri, RDF::DC11.title, nil]).map(&:object)
+
+# update the title
+orm.graph.delete([orm.resource.subject_uri, RDF::DC11.title, nil])
+orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, 'a new title'])
+
+# save changes
+orm.save
+```
+
+### Fedora Commons notes
+Due to some discrepancies with alpha version of Fedora Commons, you may need to do some things differently:
+* [Can't load resources from Fedora 4](https://github.com/cbeer/ldp/issues/1)
+* [orm.save with an rdf:type doesn't work with Fedora 4.0.0-alpha-3](https://github.com/cbeer/ldp/issues/2)
 
 ## Contributing
 
