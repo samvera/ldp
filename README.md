@@ -27,7 +27,7 @@ resource = Ldp::Resource.new(client, host + '/rest/node/to/update')
 orm = Ldp::Orm.new(resource)
 
 # view the current title(s)
-orm.graph.query([orm.resource.subject_uri, RDF::DC11.title, nil]).map(&:object)
+orm.orm.value(RDF::DC11.title)
 
 # update the title
 orm.graph.delete([orm.resource.subject_uri, RDF::DC11.title, nil])

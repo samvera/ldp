@@ -2,6 +2,7 @@ module Ldp
   class Orm
 
     attr_reader :resource
+    attr_reader :last_response
 
     def initialize resource
       @resource = resource
@@ -36,10 +37,8 @@ module Ldp
 
       if diff.any?
         diff
-      elsif @last_response.success?
-        true
       else
-        false
+        @last_response.success?
       end
     end
 
@@ -85,3 +84,4 @@ module Ldp
     end
   end
 end
+
