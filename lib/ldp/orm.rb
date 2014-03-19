@@ -2,6 +2,7 @@ module Ldp
   class Orm
 
     attr_reader :resource
+    attr_reader :last_response
 
     def initialize resource
       @resource = resource
@@ -30,14 +31,14 @@ module Ldp
     end
 
     def save
-      resource.update
+      @last_response = resource.update
 
       diff = Ldp::Resource.check_for_differences_and_reload_resource self
 
-      if diff.empty?
-        true
-      else
+      if diff.any?
         diff
+      else
+        @last_response.success?
       end
     end
 
@@ -45,7 +46,9 @@ module Ldp
       result = save
 
       if result.is_a? RDF::Graph
-        raise GraphDifferenceException.new "", diff
+        raise GraphDifferenceException.new "", result
+      elsif !result
+        raise SaveException.new "", @last_response
       end
 
       result
@@ -69,8 +72,16 @@ module Ldp
     attr_reader :diff
     def initialize message, diff
       super(message)
-      self.diff = diff
+      @diff = diff
     end
+  end
 
+  class SaveException < Exception
+    attr_reader :response
+    def initialize message, response
+      super(message)
+      @response = response
+    end
   end
 end
+

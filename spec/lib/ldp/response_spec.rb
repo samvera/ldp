@@ -57,7 +57,7 @@ describe Ldp::Response do
 
   describe "#graph" do
     it "should parse the response body for an RDF graph" do
-      mock_response.stub :body => "<> <info:b> <info:c>", :headers => LDP_RESOURCE_HEADERS
+      mock_response.stub :body => "<> <info:b> <info:c> .", :headers => LDP_RESOURCE_HEADERS
       subject.stub :page_subject => RDF::URI.new('info:a')
       graph = subject.graph
      
