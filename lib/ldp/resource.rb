@@ -1,5 +1,6 @@
 module Ldp
   class Resource
+
     attr_reader :client, :subject
 
     ##
@@ -43,7 +44,9 @@ module Ldp
     ##
     # Get the resource
     def get
-      @get ||= client.get subject
+      @get ||= client.get(subject).tap do |result|
+        raise NotFound if result.status == 404
+      end
     end
 
     ##

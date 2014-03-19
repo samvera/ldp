@@ -14,4 +14,7 @@ module Ldp
   autoload :Container, 'ldp/container'
 
   autoload :Orm, 'ldp/orm'
+
+  class NotFound < StandardError; end
+  
 end
