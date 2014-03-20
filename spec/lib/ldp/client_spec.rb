@@ -80,11 +80,32 @@ describe "Ldp::Client" do
   end
 
   describe "post" do
-
     it "should POST to the subject at the HTTP endpoint" do
       resp = subject.post "a_container"
       expect(resp.status).to eq(201)
       expect(resp.headers[:Location]).to eq("http://example.com/a_container/subresource")
+    end
+
+    it "should set content" do
+      subject.post "a_container", 'foo' do |req|
+        expect(req.body).to eq 'foo'
+      end
+    end
+
+    it "should set default Content-type" do
+      subject.post "a_container", 'foo' do |req|
+        expect(req.headers).to eq({ "Content-Type" => "text/turtle" }) 
+      end
+    end
+
+    it "should set headers" do
+      subject.post "a_container", 'foo', {'Content-Type' => 'application/pdf'} do |req|
+        expect(req.headers).to eq({ "Content-Type" => "application/pdf" }) 
+      end
+    end
+
+    it "should set headers passed as arguments" do
+      resp = subject.post "a_container"
     end
 
     it "should accept a block to change the HTTP request" do

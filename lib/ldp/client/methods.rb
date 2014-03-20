@@ -23,10 +23,10 @@ module Ldp::Client::Methods
   end
 
   # Post TTL to an LDP Resource
-  def post url, body = nil
+  def post url, body = nil, headers = {}
     http.post do |req|
       req.url url
-      req.headers['Content-Type'] = 'text/turtle'
+      req.headers = {"Content-Type"=>"text/turtle"}.merge headers
       req.body = body
       yield req if block_given?
     end
