@@ -1,5 +1,6 @@
 require 'ldp/version'
 require 'linkeddata'
+require 'logger'
 
 module Ldp
   RDF::Graph.send(:include, RDF::Isomorphic)
@@ -16,5 +17,15 @@ module Ldp
   autoload :Orm, 'ldp/orm'
 
   class NotFound < StandardError; end
+
+  class << self
+    def logger
+      @logger ||= Logger.new(STDOUT).tap do |log|
+        log.level = Logger::WARN
+      end
+    end
+
+    attr_writer :logger
+  end
   
 end

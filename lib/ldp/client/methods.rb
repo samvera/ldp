@@ -1,4 +1,7 @@
 module Ldp::Client::Methods
+  def logger
+    Ldp.logger
+  end
 
   # Get a LDP Resource by URI
   def get url
@@ -24,6 +27,7 @@ module Ldp::Client::Methods
 
   # Post TTL to an LDP Resource
   def post url, body = nil, headers = {}
+    logger.debug "POST [#{url}] #{body}"
     http.post do |req|
       req.url url
       req.headers = {"Content-Type"=>"text/turtle"}.merge headers
@@ -34,6 +38,7 @@ module Ldp::Client::Methods
 
   # Update an LDP resource with TTL by URI
   def put url, body
+    logger.debug "PUT [#{url}] #{body}"
     http.put do |req|
       req.url url
       req.headers['Content-Type'] = 'text/turtle'
