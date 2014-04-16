@@ -38,8 +38,25 @@ module Ldp
 
     ##
     # Is the response an LDP resource?
+
     def self.resource? response
       Array(links(response)["type"]).include? Ldp.resource.to_s
+    end
+
+    ##
+    # Is the response an LDP container?
+    def self.container? response
+      [
+        Ldp.basic_container, 
+        Ldp.direct_container, 
+        Ldp.indirect_container
+      ].any? { |x| Array(links(response)["type"]).include? x.to_s }
+    end
+    
+    ##
+    # Link: headers from the HTTP response
+    def links
+      @links ||= Ldp::Response.links(self)
     end
 
     ##
@@ -51,7 +68,7 @@ module Ldp
     ##
     # Is the response an LDP container
     def container?
-      graph.has_statement? RDF::Statement.new(subject, RDF.type, Ldp.container)
+      Ldp::Response.container?(self)
     end
 
     def preferences
@@ -115,12 +132,6 @@ module Ldp
       key = Ldp.send("prefer_#{preference}") if Ldp.respond_to("prefer_#{preference}")
       key ||= preference
       preferences["return"][:includes].include?(key) || !preferences["return"][:omits].include?(key) 
-    end
-
-    ##
-    # Link: headers from the HTTP response
-    def links
-      Ldp::Response.links(self)
     end
     
     def minimal?

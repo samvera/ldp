@@ -12,6 +12,22 @@ module Ldp::Uri
     uri("Container")
   end
 
+  def basic_container
+    uri("BasicContainer")
+  end
+  
+  def direct_container
+    uri("DirectContainer")
+  end
+  
+  def indirect_container
+    uri("IndirectContainer")
+  end
+  
+  def contains
+    uri("contains")
+  end
+  
   def page
     uri("Page")
   end

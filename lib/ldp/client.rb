@@ -1,10 +1,11 @@
 require 'faraday'
 
+##
+# LDP client for presenting an ORM on top of an LDP resource
 module Ldp
   class Client
 
     require 'ldp/client/methods'
-
     include Ldp::Client::Methods
 
     def initialize *http_client
@@ -12,17 +13,18 @@ module Ldp
     end
 
     # Find or initialize a new LDP resource by URI
-    def find_or_initialize subject
-      data = get(subject)
+    def find_or_initialize subject, options = {}
+      data = get(subject, options = {})
 
-      unless data.is_a? Response
-        raise "#{subject} is not an LDP Resource"
-      end
-
-      if data.container?
-        Container.new self, subject, data
-      else  
-        Resource.new self, subject, data
+      case
+      when !data.is_a?(Ldp::Response)
+        Resource::BinarySource.new self, subject, data
+      when data.container?
+        Ldp::Container.new_from_response self, subject, data
+      when data.resource?
+        Resource::RdfSource.new self, subject, data
+      else
+        Resource::BinarySource.new self, subject, data
       end
     end
 

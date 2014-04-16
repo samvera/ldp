@@ -23,6 +23,7 @@ describe "Ldp::Client" do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
       stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
       stub.get('/a_container') {[ 200, {"Link" => ["http://www.w3.org/ns/ldp#Resource;rel=\"type\"","http://www.w3.org/ns/ldp#BasicContainer;rel=\"type\""]}, simple_container_graph ]}
+      stub.get('/a_binary_resource') { [200, {}, ""]}
       stub.put("/a_resource") { [204]}
       stub.delete("/a_resource") { [204]}
       stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
@@ -160,6 +161,11 @@ describe "Ldp::Client" do
       resource = subject.find_or_initialize "a_container"
       expect(resource).to be_a_kind_of(Ldp::Resource)
       expect(resource).to be_a_kind_of(Ldp::Container)
+    end
+    
+    it "should be a binary resource" do
+      resource = subject.find_or_initialize "a_binary_resource"
+      expect(resource).to be_a_kind_of(Ldp::Resource::BinarySource)
     end
 
   end
