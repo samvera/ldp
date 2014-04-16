@@ -1,10 +1,13 @@
+##
+# HTTP client methods for making requests to an LDP resource and getting a response back.
 module Ldp::Client::Methods
   def logger
     Ldp.logger
   end
 
   # Get a LDP Resource by URI
-  def get url
+  def get url, options = {}
+    logger.debug "LDP: GET [#{url}]"
     resp = http.get do |req|                          
       req.url url
       yield req if block_given?
@@ -19,6 +22,7 @@ module Ldp::Client::Methods
 
   # Delete a LDP Resource by URI
   def delete url
+    logger.debug "LDP: DELETE [#{url}]"
     http.delete do |req|
       req.url url
       yield req if block_given?
@@ -27,7 +31,7 @@ module Ldp::Client::Methods
 
   # Post TTL to an LDP Resource
   def post url, body = nil, headers = {}
-    logger.debug "POST [#{url}] #{body}"
+    logger.debug "LDP: POST [#{url}]"
     http.post do |req|
       req.url url
       req.headers = default_headers.merge headers
@@ -38,7 +42,7 @@ module Ldp::Client::Methods
 
   # Update an LDP resource with TTL by URI
   def put url, body, headers = {}
-    logger.debug "PUT [#{url}] #{body}"
+    logger.debug "LDP: PUT [#{url}]"
     http.put do |req|
       req.url url
       req.headers = default_headers.merge headers
