@@ -123,6 +123,12 @@ describe "Ldp::Client" do
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.put "a_resource", "some-payload", &b }.to yield_control
     end
+
+    it "should set headers" do
+      subject.put "a_resource", 'payload', {'Content-Type' => 'application/pdf'} do |req|
+        expect(req.headers).to eq({ "Content-Type" => "application/pdf" }) 
+      end
+    end
   end
 
 

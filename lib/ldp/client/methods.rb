@@ -30,20 +30,26 @@ module Ldp::Client::Methods
     logger.debug "POST [#{url}] #{body}"
     http.post do |req|
       req.url url
-      req.headers = {"Content-Type"=>"text/turtle"}.merge headers
+      req.headers = default_headers.merge headers
       req.body = body
       yield req if block_given?
     end
   end
 
   # Update an LDP resource with TTL by URI
-  def put url, body
+  def put url, body, headers = {}
     logger.debug "PUT [#{url}] #{body}"
     http.put do |req|
       req.url url
-      req.headers['Content-Type'] = 'text/turtle'
+      req.headers = default_headers.merge headers
       req.body = body
       yield req if block_given?
     end
+  end
+
+  private
+
+  def default_headers
+    {"Content-Type"=>"text/turtle"}
   end
 end
