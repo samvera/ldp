@@ -1,12 +1,30 @@
+##
+# HTTP client methods for making requests to an LDP resource and getting a response back.
 module Ldp::Client::Methods
-  def logger
-    Ldp.logger
+  
+  attr_reader :http
+  def initialize_http_client *http_client
+    if http_client.length == 1 and http_client.first.is_a? Faraday::Connection
+      @http = http_client.first
+    else 
+      @http = Faraday.new *http_client  
+    end
   end
 
   # Get a LDP Resource by URI
-  def get url
+  def get url, options = {}
+    logger.debug "LDP: GET [#{url}]"
     resp = http.get do |req|                          
       req.url url
+
+      if options[:minimal]
+        req.headers["Prefer"] = "return=minimal"
+      else
+        includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
+        omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
+        req.headers["Prefer"] = "return=representation; include=\"#{includes.join(" ")}\" omit=\"#{omits.join(" ")}\""
+      end
+
       yield req if block_given?
     end
 
@@ -19,6 +37,7 @@ module Ldp::Client::Methods
 
   # Delete a LDP Resource by URI
   def delete url
+    logger.debug "LDP: DELETE [#{url}]"
     http.delete do |req|
       req.url url
       yield req if block_given?
@@ -27,7 +46,7 @@ module Ldp::Client::Methods
 
   # Post TTL to an LDP Resource
   def post url, body = nil, headers = {}
-    logger.debug "POST [#{url}] #{body}"
+    logger.debug "LDP: POST [#{url}]"
     http.post do |req|
       req.url url
       req.headers = default_headers.merge headers
@@ -38,7 +57,7 @@ module Ldp::Client::Methods
 
   # Update an LDP resource with TTL by URI
   def put url, body, headers = {}
-    logger.debug "PUT [#{url}] #{body}"
+    logger.debug "LDP: PUT [#{url}]"
     http.put do |req|
       req.url url
       req.headers = default_headers.merge headers

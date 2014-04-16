@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Ldp::Response do
   LDP_RESOURCE_HEADERS = { "Link" => Ldp.resource.to_s + ";rel=\"type\""}
 
-  let(:mock_response) { double() }
+  let(:mock_response) { double(headers: {}, env: { url: "info:a" }) }
   let(:mock_client) { double(Ldp::Client) }
 
   subject do
@@ -14,7 +14,6 @@ describe Ldp::Response do
     it "should mixin Ldp::Response into the raw response" do
       Ldp::Response.wrap(mock_client, mock_response)
       expect(mock_response).to be_a_kind_of(Ldp::Response)
-      expect(mock_response.ldp_client).to eq(mock_client)
     end
   end
 
@@ -32,7 +31,7 @@ describe Ldp::Response do
 
       expect(h['some-rel']).to include("xyz")
       expect(h['some-multi-rel']).to include("abc", "123")
-      expect(h['doesnt-exist']).to be_empty
+      expect(h['doesnt-exist']).to be_nil
     end
 
     it "should return an empty hash if no link headers are availabe" do
@@ -58,7 +57,6 @@ describe Ldp::Response do
   describe "#graph" do
     it "should parse the response body for an RDF graph" do
       mock_response.stub :body => "<> <info:b> <info:c> .", :headers => LDP_RESOURCE_HEADERS
-      subject.stub :page_subject => RDF::URI.new('info:a')
       graph = subject.graph
      
       expect(graph).to have_subject(RDF::URI.new("info:a")) 
@@ -86,8 +84,6 @@ describe Ldp::Response do
     it "should see if the response has an ldp:Page statement" do
       graph = RDF::Graph.new
 
-      subject.stub :page_subject => RDF::URI.new('info:a')
-
       graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
 
       mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
@@ -105,8 +101,6 @@ describe Ldp::Response do
   describe "#page" do
     it "should get the ldp:Page data from the query" do
       graph = RDF::Graph.new
-
-      subject.stub :page_subject => RDF::URI.new('info:a')
 
       graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
       graph << [RDF::URI.new('info:b'), RDF.type, Ldp.page]

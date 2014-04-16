@@ -33,7 +33,7 @@ module Ldp
     def save
       @last_response = resource.update
 
-      diff = Ldp::Resource.check_for_differences_and_reload_resource self
+      diff = resource.check_for_differences_and_reload
 
       if diff.any?
         diff
@@ -84,4 +84,3 @@ module Ldp
     end
   end
 end
-

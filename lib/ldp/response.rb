@@ -1,33 +1,62 @@
 module Ldp
   module Response
+    require 'ldp/response/paging'
 
     ##
     # Wrap the raw Faraday respone with our LDP extensions
     def self.wrap client, raw_resp
       raw_resp.send(:extend, Ldp::Response)
-      raw_resp.ldp_client = client
+      raw_resp.send(:extend, Ldp::Response::Paging) if raw_resp.has_page?
       raw_resp
     end
 
     ##
     # Extract the Link: headers from the HTTP resource
-    def self.links raw_resp
-      h = Hash.new { |hash, key| hash[key] = [] }
-      Array(raw_resp.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
-        v = header.scan(/(.*);\s?rel="([^"]+)"/)
-
-        if v.length == 1
-          memo[v.first.last] << v.first.first
+    def self.links response
+      h = {}
+      Array(response.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
+        m = header.match(/(?<link>.*);\s?rel="(?<rel>[^"]+)"/)
+        if m
+          memo[m[:rel]] ||= []
+          memo[m[:rel]] << m[:link]
         end
 
         memo
       end
     end
+    
+    def self.applied_preferences headers
+      h = {}
+      
+      Array(headers).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
+        m = header.match(/(?<key>[^=;]*)(=(?<value>[^;,]*))?(;\s*(?<params>[^,]*))?/)
+        includes = (m[:params].match(/include="(?<include>[^"]+)"/)[:include] || "").split(" ")
+        omits = (m[:params].match(/omit="(?<omit>[^"]+)"/)[:omit] || "").split(" ")
+        memo[m[:key]] = { value: m[:value], includes: includes, omits: omits }
+      end
+    end
 
     ##
     # Is the response an LDP resource?
-    def self.resource? raw_resp
-      links(raw_resp).fetch("type", []).include? Ldp.resource.to_s
+
+    def self.resource? response
+      Array(links(response)["type"]).include? Ldp.resource.to_s
+    end
+
+    ##
+    # Is the response an LDP container?
+    def self.container? response
+      [
+        Ldp.basic_container, 
+        Ldp.direct_container, 
+        Ldp.indirect_container
+      ].any? { |x| Array(links(response)["type"]).include? x.to_s }
+    end
+    
+    ##
+    # Link: headers from the HTTP response
+    def links
+      @links ||= Ldp::Response.links(self)
     end
 
     ##
@@ -39,17 +68,16 @@ module Ldp
     ##
     # Is the response an LDP container
     def container?
-      graph.has_statement? RDF::Statement.new(subject, RDF.type, Ldp.container)
+      Ldp::Response.container?(self)
     end
 
+    def preferences
+      Ldp::Resource.applied_preferences(headers["Preference-Applied"])
+    end
     ##
     # Get the subject for the response
     def subject
-      @subject ||= if has_page?
-        graph.first_object [page_subject, Ldp.page_of, nil]
-      else
-        page_subject
-      end
+      page_subject
     end
 
     ##
@@ -59,15 +87,9 @@ module Ldp
     end
 
     ##
-    # Set the LDP client for this resource
-    def ldp_client= client
-      @ldp_client = client
-    end
-
-    ##
-    # Get the LDP client
-    def ldp_client
-      @ldp_client
+    # Is the response paginated?
+    def has_page?
+      graph.has_statement? RDF::Statement.new(page_subject, RDF.type, Ldp.page)
     end
 
     ##
@@ -101,77 +123,19 @@ module Ldp
     end
 
     ##
-    # Statements about the page
-    def page
-      @page_graph ||= begin
-        g = RDF::Graph.new  
-
-        if resource?
-          res = graph.query RDF::Statement.new(page_subject, nil, nil)
-
-          res.each_statement do |s|
-            g << s
-          end
-        end
-
-        g
-      end
+    # Extract the Link: rel="type" headers for the resource
+    def types
+      Array(links["type"])
     end
-
-    ##
-    # Is the response paginated?
-    def has_page?
-      graph.has_statement? RDF::Statement.new(page_subject, RDF.type, Ldp.page)
+    
+    def includes? preference
+      key = Ldp.send("prefer_#{preference}") if Ldp.respond_to("prefer_#{preference}")
+      key ||= preference
+      preferences["return"][:includes].include?(key) || !preferences["return"][:omits].include?(key) 
     end
-
-    ##
-    # Is there a next page?
-    def has_next?
-      next_page != nil
-    end
-
-    ##
-    # Get the URI for the next page
-    def next_page
-      graph.first_object [page_subject, Ldp.nextPage, nil]
-    end
-
-    ##
-    # Get the URI to the first page
-    def first_page
-      if links['first']
-        RDF::URI.new links['first']
-      elsif graph.has_statement? RDf::Statement.new(page_subject, Ldp.nextPage, nil)
-        subject
-      end
-    end
-
-    ##
-    # Get a list of inlined resources
-    def resources
-      graph.query RDF::Statement.new(page_subject, Ldp.inlinedResource, nil)
-    end
-
-    ##
-    # Get a list of member resources
-    def members
-      graph.query RDF::Statement.new(page_subject, membership_predicate, nil)
-    end
-
-    ##
-    # Predicate to use to determine container membership
-    def membership_predicate
-      graph.first_object [page_subject, Ldp.membership_predicate, nil]
-    end
-
-    def sort
-
-    end
-
-    ##
-    # Link: headers from the HTTP response
-    def links
-      Ldp::Response.links(self)
+    
+    def minimal?
+      preferences["return"][:value] == "minimal"
     end
   end
 end

@@ -12,6 +12,22 @@ module Ldp::Uri
     uri("Container")
   end
 
+  def basic_container
+    uri("BasicContainer")
+  end
+  
+  def direct_container
+    uri("DirectContainer")
+  end
+  
+  def indirect_container
+    uri("IndirectContainer")
+  end
+  
+  def contains
+    uri("contains")
+  end
+  
   def page
     uri("Page")
   end
@@ -24,12 +40,28 @@ module Ldp::Uri
     uri("nextPage")
   end
 
-  def inlinedResource
-    uri("inlinedResource")
-  end
-
   def membership_predicate
     uri("membershipPredicate")
+  end
+  
+  def prefer_empty_container
+    uri("PreferEmptyContainer")
+  end
+  
+  def prefer_membership
+    uri("PreferMembership")
+  end
+  
+  def prefer_containment
+    uri("PreferContainment")
+  end
+  
+  def has_member_relation
+    uri("hasMemberRelation")
+  end
+  
+  def member
+    uri("member")
   end
 
 end
