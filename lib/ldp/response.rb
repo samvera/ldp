@@ -11,13 +11,13 @@ module Ldp
 
     ##
     # Extract the Link: headers from the HTTP resource
-    def self.links raw_resp
-      h = Hash.new { |hash, key| hash[key] = [] }
-      Array(raw_resp.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
-        v = header.scan(/(.*);\s?rel="([^"]+)"/)
-
-        if v.length == 1
-          memo[v.first.last] << v.first.first
+    def self.links response
+      h = {}
+      Array(response.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
+        m = header.match(/(?<link>.*);\s?rel="(?<rel>[^"]+)"/)
+        if m
+          memo[m[:rel]] ||= []
+          memo[m[:rel]] << m[:link]
         end
 
         memo
@@ -26,8 +26,8 @@ module Ldp
 
     ##
     # Is the response an LDP resource?
-    def self.resource? raw_resp
-      links(raw_resp).fetch("type", []).include? Ldp.resource.to_s
+    def self.resource? response
+      Array(links(response)["type"]).include? Ldp.resource.to_s
     end
 
     ##
@@ -162,10 +162,6 @@ module Ldp
     # Predicate to use to determine container membership
     def membership_predicate
       graph.first_object [page_subject, Ldp.membership_predicate, nil]
-    end
-
-    def sort
-
     end
 
     ##

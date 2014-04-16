@@ -27,7 +27,7 @@ describe Ldp::Orm do
   end
 
   let :test_resource do
-    Ldp::Resource.new mock_client, "http://example.com/a_resource"
+    Ldp::Resource::RdfSource.new mock_client, "http://example.com/a_resource"
   end
 
   describe "#delete" do
