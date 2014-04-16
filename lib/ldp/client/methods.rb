@@ -16,6 +16,15 @@ module Ldp::Client::Methods
     logger.debug "LDP: GET [#{url}]"
     resp = http.get do |req|                          
       req.url url
+
+      if options[:minimal]
+        req.headers["Prefer"] = "return=minimal"
+      else
+        includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
+        omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
+        req.headers["Prefer"] = "return=representation; include=\"#{includes.join(" ")}\" omit=\"#{omits.join(" ")}\""
+      end
+
       yield req if block_given?
     end
 

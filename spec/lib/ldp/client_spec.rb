@@ -1,45 +1,45 @@
 require 'spec_helper'
 describe "Ldp::Client" do
 
-    let(:simple_graph) do
-      graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
-      graph.dump(:ttl)
+  let(:simple_graph) do
+    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
+    graph.dump(:ttl)
+  end
+
+
+  let(:paginatedGraph) do
+    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
+    graph << [RDF::URI.new("?firstPage"), RDF.type, Ldp.page]
+    graph << [RDF::URI.new("?firstPage"), Ldp.page_of, RDF::URI.new("")]
+    graph.dump(:ttl)
+  end
+
+  let(:simple_container_graph) do
+    graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, Ldp.container]
+    graph.dump(:ttl)
+  end
+
+  let(:conn_stubs) do
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
+      stub.get('/a_container') {[ 200, {"Link" => ["http://www.w3.org/ns/ldp#Resource;rel=\"type\"","http://www.w3.org/ns/ldp#BasicContainer;rel=\"type\""]}, simple_container_graph ]}
+      stub.put("/a_resource") { [204]}
+      stub.delete("/a_resource") { [204]}
+      stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
     end
+  end
 
-
-    let(:paginatedGraph) do
-      graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
-      graph << [RDF::URI.new("?firstPage"), RDF.type, Ldp.page]
-      graph << [RDF::URI.new("?firstPage"), Ldp.page_of, RDF::URI.new("")]
-      graph.dump(:ttl)
-    end
-
-    let(:simple_container_graph) do
-      graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, Ldp.container]
-      graph.dump(:ttl)
-    end
-
-    let(:conn_stubs) do
-      stubs = Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
-        stub.get('/a_container') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_container_graph ]}
-        stub.put("/a_resource") { [204]}
-        stub.delete("/a_resource") { [204]}
-        stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
+  let(:mock_conn) do
+    test = Faraday.new do |builder|
+      builder.adapter :test, conn_stubs do |stub|
       end
     end
 
-    let(:mock_conn) do
-      test = Faraday.new do |builder|
-        builder.adapter :test, conn_stubs do |stub|
-        end
-      end
+  end
 
-    end
-
-    subject do
-      Ldp::Client.new mock_conn
-    end
+  subject do
+    Ldp::Client.new mock_conn
+  end
 
   describe "initialize" do
     it "should accept an existing Faraday connection" do
@@ -65,6 +65,24 @@ describe "Ldp::Client" do
 
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.get "a_resource", &b }.to yield_control
+    end
+    
+    context "should provide convenient accessors for LDP Prefer headers" do
+      it "should set the minimal header" do
+        subject.get "a_resource", minimal: true do |req|
+          expect(req.headers["Prefer"]).to eq "return=minimal"
+        end
+      end
+      it "should set the include parameter" do
+        subject.get "a_resource", include: "membership" do |req|
+          expect(req.headers["Prefer"]).to match "include=\"#{Ldp.prefer_membership}\""
+        end
+      end
+      it "should set the omit parameter" do
+        subject.get "a_resource", omit: "containment" do |req|
+          expect(req.headers["Prefer"]).to match "omit=\"#{Ldp.prefer_containment}\""
+        end
+      end
     end
   end
 

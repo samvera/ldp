@@ -24,6 +24,17 @@ module Ldp
         memo
       end
     end
+    
+    def self.applied_preferences headers
+      h = {}
+      
+      Array(headers).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
+        m = header.match(/(?<key>[^=;]*)(=(?<value>[^;,]*))?(;\s*(?<params>[^,]*))?/)
+        includes = (m[:params].match(/include="(?<include>[^"]+)"/)[:include] || "").split(" ")
+        omits = (m[:params].match(/omit="(?<omit>[^"]+)"/)[:omit] || "").split(" ")
+        memo[m[:key]] = { value: m[:value], includes: includes, omits: omits }
+      end
+    end
 
     ##
     # Is the response an LDP resource?
@@ -43,6 +54,9 @@ module Ldp
       graph.has_statement? RDF::Statement.new(subject, RDF.type, Ldp.container)
     end
 
+    def preferences
+      Ldp::Resource.applied_preferences(headers["Preference-Applied"])
+    end
     ##
     # Get the subject for the response
     def subject
@@ -96,11 +110,21 @@ module Ldp
     def types
       Array(links["type"])
     end
+    
+    def includes? preference
+      key = Ldp.send("prefer_#{preference}") if Ldp.respond_to("prefer_#{preference}")
+      key ||= preference
+      preferences["return"][:includes].include?(key) || !preferences["return"][:omits].include?(key) 
+    end
 
     ##
     # Link: headers from the HTTP response
     def links
       Ldp::Response.links(self)
+    end
+    
+    def minimal?
+      preferences["return"][:value] == "minimal"
     end
   end
 end
