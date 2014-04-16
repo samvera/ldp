@@ -6,15 +6,9 @@ module Ldp
     require 'ldp/client/methods'
 
     include Ldp::Client::Methods
-    
-    attr_reader :http
 
     def initialize *http_client
-      if http_client.length == 1 and http_client.first.is_a? Faraday::Connection
-        @http = http_client.first
-      else 
-        @http = Faraday.new *http_client  
-      end
+      initialize_http_client *http_client
     end
 
     # Find or initialize a new LDP resource by URI
@@ -32,5 +26,8 @@ module Ldp
       end
     end
 
+    def logger
+      Ldp.logger
+    end
   end
 end

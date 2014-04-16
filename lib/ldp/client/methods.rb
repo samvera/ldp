@@ -1,8 +1,14 @@
 ##
 # HTTP client methods for making requests to an LDP resource and getting a response back.
 module Ldp::Client::Methods
-  def logger
-    Ldp.logger
+  
+  attr_reader :http
+  def initialize_http_client *http_client
+    if http_client.length == 1 and http_client.first.is_a? Faraday::Connection
+      @http = http_client.first
+    else 
+      @http = Faraday.new *http_client  
+    end
   end
 
   # Get a LDP Resource by URI
