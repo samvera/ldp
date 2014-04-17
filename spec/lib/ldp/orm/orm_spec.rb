@@ -15,7 +15,7 @@ describe Ldp::Orm do
   end
 
   let(:mock_conn) do
-    Faraday.new do |builder|
+    Faraday.new 'http://localhost:8983/fedora' do |builder|
       builder.adapter :test, conn_stubs do |stub|
       end
     end
@@ -39,7 +39,7 @@ describe Ldp::Orm do
   describe "#create" do
     let(:conn_stubs) do
       Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.post("/") { [201]}
+        stub.post("/fedora/rest") { [201]}
       end
     end
     let :test_resource do
@@ -63,7 +63,7 @@ describe Ldp::Orm do
 
     it "should return false if the response was not successful" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
-      conn_stubs.put('/a_resource') {[412]}
+      conn_stubs.put('/a_resource') {[412, nil, 'There was an error']}
       expect(subject.save).to be_false
     end
   end

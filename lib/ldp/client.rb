@@ -8,6 +8,8 @@ module Ldp
     require 'ldp/client/methods'
     include Ldp::Client::Methods
 
+    ENDPOINT = '/rest'
+
     def initialize *http_client
       initialize_http_client *http_client
     end

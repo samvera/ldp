@@ -11,6 +11,14 @@ module Ldp::Client::Methods
     end
   end
 
+  def prefix_path
+    @path ||= @http.url_prefix.path
+  end
+
+  def endpoint_path
+    prefix_path + Ldp::Client::ENDPOINT
+  end
+
   # Get a LDP Resource by URI
   def get url, options = {}
     logger.debug "LDP: GET [#{url}]"
@@ -78,7 +86,7 @@ module Ldp::Client::Methods
     resp.tap do |resp|
       unless resp.success?
         raise Ldp::NotFound.new(resp.body) if resp.status == 404
-        raise Ldp::HttpError.new(resp.body)
+        raise Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
       end
     end
   end

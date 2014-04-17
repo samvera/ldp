@@ -7,13 +7,12 @@ describe Ldp::Resource::RdfSource do
 
   let(:conn_stubs) do
     Faraday::Adapter::Test::Stubs.new do |stub|
-      # stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
-      stub.post("/") { [201]}
+      stub.post("/fedora/rest") { [201]}
     end
   end
 
   let(:mock_conn) do
-    Faraday.new do |builder|
+    Faraday.new 'http://localhost:8983/fedora' do |builder|
       builder.adapter :test, conn_stubs do |stub|
       end
     end
