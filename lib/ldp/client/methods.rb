@@ -22,7 +22,10 @@ module Ldp::Client::Methods
       else
         includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
         omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
-        req.headers["Prefer"] = "return=representation#{";" unless includes.empty? and omits.empty? } #{"include=\"#{includes.join(" ")}\"" unless includes.empty?} #{"omit=\"#{omits.join(" ")}\"" unless omits.empty? }"
+        req.headers["Prefer"] = ["return=representation", 
+          ("include=\"#{includes.join(" ")}\"" unless includes.empty?),
+          ("omit=\"#{omits.join(" ")}\"" unless omits.empty?)
+        ].compact.join("; ")
       end
 
       yield req if block_given?
