@@ -16,7 +16,7 @@ describe Ldp::Orm do
   end
 
   let(:mock_conn) do
-    Faraday.new do |builder|
+    Faraday.new 'http://localhost:8983/fedora/rest' do |builder|
       builder.adapter :test, conn_stubs do |stub|
       end
     end
@@ -40,7 +40,7 @@ describe Ldp::Orm do
   describe "#create" do
     let(:conn_stubs) do
       Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.post("/") { [201]}
+        stub.post("/fedora/rest") { [201]}
       end
     end
     let :test_resource do

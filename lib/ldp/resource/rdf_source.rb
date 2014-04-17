@@ -21,8 +21,8 @@ module Ldp
     # @return [RdfSource] the new representation
     def create
       raise "Can't call create on an existing resource" unless new?
-      resp = client.post '', graph.dump(:ttl) do |req|
-        req.headers['Slug'] = subject
+      resp = client.post client.endpoint_path, graph.dump(:ttl) do |req|
+        req.headers['Slug'] = slug if subject
       end
 
       @subject = resp.headers['Location']
@@ -86,5 +86,11 @@ module Ldp
 
       diff
     end
+
+    private
+
+      def slug
+        subject.sub(/^.+#{client.endpoint_path}\//, '')
+      end
   end
 end
