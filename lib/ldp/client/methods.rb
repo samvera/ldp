@@ -15,7 +15,7 @@ module Ldp::Client::Methods
   def get url, options = {}
     logger.debug "LDP: GET [#{url}]"
     resp = http.get do |req|                          
-      req.url url
+      req.url munge_to_relative_url(url)
 
       if options[:minimal]
         req.headers["Prefer"] = "return=minimal"
@@ -41,7 +41,7 @@ module Ldp::Client::Methods
   def delete url
     logger.debug "LDP: DELETE [#{url}]"
     resp = http.delete do |req|
-      req.url url
+      req.url munge_to_relative_url(url)
       yield req if block_given?
     end
 
@@ -52,7 +52,7 @@ module Ldp::Client::Methods
   def post url, body = nil, headers = {}
     logger.debug "LDP: POST [#{url}]"
     resp = http.post do |req|
-      req.url url
+      req.url munge_to_relative_url(url)
       req.headers = default_headers.merge headers
       req.body = body
       yield req if block_given?
@@ -64,7 +64,7 @@ module Ldp::Client::Methods
   def put url, body, headers = {}
     logger.debug "LDP: PUT [#{url}]"
     resp = http.put do |req|
-      req.url url
+      req.url munge_to_relative_url(url)
       req.headers = default_headers.merge headers
       req.body = body
       yield req if block_given?
@@ -85,5 +85,18 @@ module Ldp::Client::Methods
 
   def default_headers
     {"Content-Type"=>"text/turtle"}
+  end
+  
+  ##
+  # Some valid query paths can be mistaken for absolute URIs
+  # with an alternative scheme. If the scheme isn't HTTP(S), assume
+  # they meant a relative URI instead. 
+  def munge_to_relative_url url
+    purl = URI.parse(url)
+    if purl.absolute? and !((purl.scheme rescue nil) =~ /^http/)
+      "./" + url
+    else
+      url
+    end
   end
 end
