@@ -11,6 +11,14 @@ module Ldp::Client::Methods
     end
   end
 
+  def prefix_path
+    @path ||= @http.url_prefix.path
+  end
+
+  def endpoint_path
+    prefix_path + Ldp::Client::ENDPOINT
+  end
+
   # Get a LDP Resource by URI
   def get url, options = {}
     logger.debug "LDP: GET [#{url}]"
