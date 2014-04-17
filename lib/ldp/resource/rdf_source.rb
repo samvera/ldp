@@ -1,21 +1,33 @@
 module Ldp
   class Resource::RdfSource < Ldp::Resource
+
     def initialize client, subject, graph_or_response = nil
       super client, subject
-      @graph = graph_or_response if graph_or_response.is_a? RDF::Graph
-      @get = graph_or_response if graph_or_response.is_a? Ldp::Response
+
+      case graph_or_response
+        when RDF::Graph
+          @graph = graph_or_response
+        when Ldp::Response
+          @get = graph_or_response
+        when NilClass
+          #nop
+        else
+          raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Graph or a Ldp::Response. You provided #{graph_or_response.class}"
+      end
     end
 
     ##
     # Create a new resource at the URI
+    # @return [RdfSource] the new representation
     def create
-      raise "" if new?
+      raise "Can't call create on an existing resource" unless new?
       resp = client.post '', graph.dump(:ttl) do |req|
         req.headers['Slug'] = subject
       end
 
       @subject = resp.headers['Location']
       @subject_uri = nil
+      reload
     end
 
     ##

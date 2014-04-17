@@ -4,19 +4,18 @@ describe Ldp::Orm do
   subject { Ldp::Orm.new test_resource }
   
   let(:simple_graph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
-    graph.dump(:ttl)
+    RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
   end
 
   let(:conn_stubs) do
-    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
-      stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
+    Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph.dump(:ttl) ]}
       stub.put("/a_resource") { [204]}
     end
   end
 
   let(:mock_conn) do
-    test = Faraday.new do |builder|
+    Faraday.new do |builder|
       builder.adapter :test, conn_stubs do |stub|
       end
     end
@@ -38,7 +37,17 @@ describe Ldp::Orm do
   end
 
   describe "#create" do
-
+    let(:conn_stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post("/") { [201]}
+      end
+    end
+    let :test_resource do
+      Ldp::Resource::RdfSource.new mock_client, nil, simple_graph
+    end
+    it "should return a new orm" do
+      expect(subject.create).to be_kind_of Ldp::Orm
+    end
   end
 
   describe "#save" do
