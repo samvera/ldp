@@ -43,9 +43,7 @@ module Ldp
     ##
     # Get the resource
     def get
-      @get ||= client.get(subject).tap do |result|
-        raise NotFound if result.status == 404
-      end
+      @get ||= client.get(subject)
     end
 
     ##

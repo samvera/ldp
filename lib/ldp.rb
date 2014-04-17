@@ -17,7 +17,8 @@ module Ldp
 
   autoload :Orm, 'ldp/orm'
 
-  class NotFound < StandardError; end
+  class HttpError < RuntimeError; end
+  class NotFound < HttpError; end
 
   class << self
     def logger

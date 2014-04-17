@@ -33,40 +33,55 @@ module Ldp::Client::Methods
     else
       resp
     end
+    
+    check_for_errors(resp)
   end
 
   # Delete a LDP Resource by URI
   def delete url
     logger.debug "LDP: DELETE [#{url}]"
-    http.delete do |req|
+    resp = http.delete do |req|
       req.url url
       yield req if block_given?
     end
+
+    check_for_errors(resp)
   end
 
   # Post TTL to an LDP Resource
   def post url, body = nil, headers = {}
     logger.debug "LDP: POST [#{url}]"
-    http.post do |req|
+    resp = http.post do |req|
       req.url url
       req.headers = default_headers.merge headers
       req.body = body
       yield req if block_given?
     end
+    check_for_errors(resp)
   end
 
   # Update an LDP resource with TTL by URI
   def put url, body, headers = {}
     logger.debug "LDP: PUT [#{url}]"
-    http.put do |req|
+    resp = http.put do |req|
       req.url url
       req.headers = default_headers.merge headers
       req.body = body
       yield req if block_given?
     end
+    check_for_errors(resp)
   end
 
   private
+  
+  def check_for_errors resp
+    resp.tap do |resp|
+      unless resp.success?
+        raise Ldp::NotFound.new(resp.body) if resp.status == 404
+        raise Ldp::HttpError.new(resp.body)
+      end
+    end
+  end
 
   def default_headers
     {"Content-Type"=>"text/turtle"}
