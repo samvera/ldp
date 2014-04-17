@@ -22,7 +22,7 @@ module Ldp::Client::Methods
       else
         includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
         omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
-        req.headers["Prefer"] = "return=representation; include=\"#{includes.join(" ")}\" omit=\"#{omits.join(" ")}\""
+        req.headers["Prefer"] = "return=representation#{";" unless includes.empty? and omits.empty? } #{"include=\"#{includes.join(" ")}\"" unless includes.empty?} #{"omit=\"#{omits.join(" ")}\"" unless omits.empty? }"
       end
 
       yield req if block_given?
@@ -72,6 +72,17 @@ module Ldp::Client::Methods
     check_for_errors(resp)
   end
 
+  # Update an LDP resource with TTL by URI
+  def patch url, body, headers = {}
+    logger.debug "LDP: PATCH [#{url}]"
+    resp = http.patch do |req|
+      req.url munge_to_relative_url(url)
+      req.headers = default_patch_headers.merge headers
+      req.body = body
+      yield req if block_given?
+    end
+    check_for_errors(resp)
+  end
   private
   
   def check_for_errors resp
@@ -87,6 +98,9 @@ module Ldp::Client::Methods
     {"Content-Type"=>"text/turtle"}
   end
   
+  def default_patch_headers
+    {"Content-Type"=>"application/sparql-update"}
+  end
   ##
   # Some valid query paths can be mistaken for absolute URIs
   # with an alternative scheme. If the scheme isn't HTTP(S), assume
