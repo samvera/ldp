@@ -32,6 +32,9 @@ module Ldp
     # Is the resource new, or does it exist in the LDP server?
     def new?
       get
+      false
+    rescue Ldp::NotFound
+      true
     end
 
     ##
@@ -43,9 +46,7 @@ module Ldp
     ##
     # Get the resource
     def get
-      @get ||= client.get(subject).tap do |result|
-        raise NotFound if result.status == 404
-      end
+      @get ||= client.get(subject)
     end
 
     ##

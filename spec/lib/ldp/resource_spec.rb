@@ -37,4 +37,20 @@ describe Ldp::Resource do
       end
     end
   end
+  
+  describe "#new?" do
+    context "with an object not in the repository" do
+      let(:path) { '/not_found_resource' }
+      it "should be true" do  
+        expect(subject).to be_new
+      end
+    end
+    
+    context "with an object in the repository" do
+      let(:path) { '/a_resource' }
+      it "should be false" do  
+        expect(subject).to_not be_new
+      end
+    end
+  end
 end

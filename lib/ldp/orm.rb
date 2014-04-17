@@ -40,6 +40,9 @@ module Ldp
       else
         @last_response.success?
       end
+    rescue Ldp::HttpError => e
+      logger.debug e
+      false
     end
 
     def save!
@@ -66,6 +69,11 @@ module Ldp
       super
     end
 
+    private
+
+    def logger
+      Ldp.logger
+    end
   end
 
   class GraphDifferenceException < Exception

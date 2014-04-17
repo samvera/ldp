@@ -27,6 +27,8 @@ describe "Ldp::Client" do
       stub.put("/a_resource") { [204]}
       stub.delete("/a_resource") { [204]}
       stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
+      stub.get("/test:1") { [200] }
+      stub.get("http://test:8080/abc") { [200] }
     end
   end
 
@@ -83,6 +85,18 @@ describe "Ldp::Client" do
         subject.get "a_resource", omit: "containment" do |req|
           expect(req.headers["Prefer"]).to match "omit=\"#{Ldp.prefer_containment}\""
         end
+      end
+    end
+    
+    context "with an invalid relative uri" do
+      it "should work" do
+        subject.get "test:1"
+      end
+    end
+    
+    context "with an absolute uri" do
+      it "should work" do
+        subject.get "http://test:8080/abc"
       end
     end
   end
