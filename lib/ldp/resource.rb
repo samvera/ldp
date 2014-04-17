@@ -32,6 +32,9 @@ module Ldp
     # Is the resource new, or does it exist in the LDP server?
     def new?
       get
+      false
+    rescue Ldp::NotFound
+      true
     end
 
     ##
