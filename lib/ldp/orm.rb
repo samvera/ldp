@@ -27,7 +27,9 @@ module Ldp
     end
 
     def create
-      nil
+      # resource.create returns a reloaded resource which causes any default URIs (e.g. "<>")
+      # in the graph to be transformed to routable URIs
+      Ldp::Orm.new resource.create
     end
 
     def save
