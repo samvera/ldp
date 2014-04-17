@@ -86,7 +86,7 @@ module Ldp::Client::Methods
     resp.tap do |resp|
       unless resp.success?
         raise Ldp::NotFound.new(resp.body) if resp.status == 404
-        raise Ldp::HttpError.new(resp.body)
+        raise Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
       end
     end
   end

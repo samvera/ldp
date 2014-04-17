@@ -63,7 +63,7 @@ describe Ldp::Orm do
 
     it "should return false if the response was not successful" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
-      conn_stubs.put('/a_resource') {[412]}
+      conn_stubs.put('/a_resource') {[412, nil, 'There was an error']}
       expect(subject.save).to be_false
     end
   end
