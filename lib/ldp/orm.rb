@@ -43,6 +43,7 @@ module Ldp
         @last_response.success?
       end
     rescue Ldp::HttpError => e
+      @last_response = e
       logger.debug e
       false
     end
@@ -53,7 +54,7 @@ module Ldp
       if result.is_a? RDF::Graph
         raise GraphDifferenceException.new "", result
       elsif !result
-        raise SaveException.new "", @last_response
+        raise SaveException.new @last_response
       end
 
       result
@@ -86,11 +87,6 @@ module Ldp
     end
   end
 
-  class SaveException < Exception
-    attr_reader :response
-    def initialize message, response
-      super(message)
-      @response = response
-    end
+  class SaveException < RuntimeError
   end
 end
