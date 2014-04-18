@@ -1,5 +1,3 @@
-require 'faraday'
-
 ##
 # LDP client for presenting an ORM on top of an LDP resource
 module Ldp

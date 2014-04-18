@@ -1,3 +1,5 @@
+require 'faraday'
+
 ##
 # HTTP client methods for making requests to an LDP resource and getting a response back.
 module Ldp::Client::Methods
