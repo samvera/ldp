@@ -5,6 +5,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'rspec/autorun'
 require 'ldp'
 require 'faraday'
+require 'active_support/notifications'
 
 RSpec.configure do |config|
 

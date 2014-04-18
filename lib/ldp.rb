@@ -26,6 +26,14 @@ module Ldp
         log.level = Logger::WARN
       end
     end
+    
+    def instrument *args, &block
+      if defined?(::ActiveSupport) && defined?(::ActiveSupport::Notifications)
+        ActiveSupport::Notifications.instrument *args, &block
+      else
+        yield
+      end
+    end
 
     attr_writer :logger
   end
