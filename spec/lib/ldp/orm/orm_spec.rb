@@ -10,6 +10,7 @@ describe Ldp::Orm do
   let(:conn_stubs) do
     Faraday::Adapter::Test::Stubs.new do |stub|
       stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph.dump(:ttl) ]}
+      stub.head('/a_resource') { [200] }
       stub.put("/a_resource") { [204]}
     end
   end
