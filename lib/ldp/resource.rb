@@ -19,15 +19,13 @@ module Ldp
     ##
     # Reload the LDP resource
     def reload
-      self.class.new client, subject
+      self.class.new client, subject, @get
     end
 
     ##
     # Is the resource new, or does it exist in the LDP server?
     def new?
-      return true if subject.nil?
-      get
-      false
+      subject.nil? || !client.head(subject)
     rescue Ldp::NotFound
       true
     end
@@ -50,6 +48,18 @@ module Ldp
       client.delete subject do |req|
         req.headers['If-Match'] = get.etag if retrieved_content?
       end
+    end
+    
+    def current? response = nil
+      response ||= @get
+      return true if new? and subject.nil?
+      
+      new_response = client.head(subject)
+
+      response.headers['ETag'] &&
+        response.headers['Last-Modified'] &&
+        new_response.headers['ETag'] == response.headers['ETag'] &&
+        new_response.headers['Last-Modified'] == response.headers['Last-Modified']
     end
 
   end

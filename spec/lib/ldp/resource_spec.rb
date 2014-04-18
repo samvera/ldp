@@ -5,7 +5,9 @@ describe Ldp::Resource do
 
   let(:conn_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.head('/not_found_resource') { [404] }
       stub.get('/not_found_resource') { [404] }
+      stub.head('/a_resource') { [200] }
       stub.get('/a_resource') { [200] }
     end
   end

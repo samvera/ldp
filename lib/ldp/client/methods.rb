@@ -12,6 +12,17 @@ module Ldp::Client::Methods
       @http = Faraday.new *http_client  
     end
   end
+  
+  def head url
+    logger.debug "LDP: HEAD [#{url}]"
+    resp = http.head do |req|                          
+      req.url munge_to_relative_url(url)
+
+      yield req if block_given?
+    end
+
+    check_for_errors(resp)
+  end
 
   # Get a LDP Resource by URI
   def get url, options = {}
