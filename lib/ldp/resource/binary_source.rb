@@ -18,18 +18,6 @@ module Ldp
     end
 
     ##
-    # Create a new resource at the URI
-    def create
-      raise "" if new?
-      resp = client.post '', content do |req|
-        req.headers['Slug'] = subject
-      end
-
-      @subject = resp.headers['Location']
-      @subject_uri = nil
-    end
-
-    ##
     # Update the stored graph
     def update new_graph = nil
       client.put subject, content do |req|
