@@ -50,6 +50,21 @@ module Ldp
       end
     end
     
+    ##
+    # Create a new resource at the URI
+    # @return [RdfSource] the new representation
+    def create &block
+      raise "Can't call create on an existing resource" unless new?
+      resp = client.post((subject || "")) do |req|
+        
+        yield req if block_given?
+      end
+
+      @subject = resp.headers['Location']
+      @subject_uri = nil
+      reload
+    end
+
     def current? response = nil
       response ||= @get
       return true if new? and subject.nil?
@@ -61,6 +76,5 @@ module Ldp
         new_response.headers['ETag'] == response.headers['ETag'] &&
         new_response.headers['Last-Modified'] == response.headers['Last-Modified']
     end
-
   end
 end

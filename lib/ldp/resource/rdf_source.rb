@@ -17,20 +17,6 @@ module Ldp
     end
 
     ##
-    # Create a new resource at the URI
-    # @return [RdfSource] the new representation
-    def create
-      raise "Can't call create on an existing resource" unless new?
-      resp = client.post '', graph.dump(:ttl) do |req|
-        req.headers['Slug'] = subject
-      end
-
-      @subject = resp.headers['Location']
-      @subject_uri = nil
-      reload
-    end
-
-    ##
     # Update the stored graph
     def update new_graph = nil
       new_graph ||= graph
@@ -38,8 +24,19 @@ module Ldp
         req.headers['If-Match'] = get.etag if retrieved_content?
       end
     end
+    
+    def create
+      super do |req|
+        req.headers = { "Content-Type" => "text/turtle" }
+      end
+    end
+    
+    def content
+      graph.dump(:ttl) if graph
+    end
 
     def graph
+      return @graph if new?
       @graph ||= begin
         original_graph = get.graph
 
