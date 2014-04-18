@@ -5,13 +5,7 @@ module Ldp
 
     attr_reader :client, :subject
 
-    ##
-    # Create a new LDP resource with a blank RDF graph
-    def self.create client, subject
-      self.new client, subject, RDF::Graph.new
-    end
-
-    def initialize client, subject, graph_or_response = nil
+    def initialize client, subject
       @client = client
       @subject = subject
     end
