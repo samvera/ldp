@@ -2,26 +2,16 @@ module Ldp
   class Resource::RdfSource < Ldp::Resource
 
     def initialize client, subject, graph_or_response = nil
-      super client, subject
+      super client, subject, graph_or_response
 
       case graph_or_response
         when RDF::Graph
           @graph = graph_or_response
         when Ldp::Response
-          @get = graph_or_response if current? graph_or_response
         when NilClass
           #nop
         else
           raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Graph or a Ldp::Response. You provided #{graph_or_response.class}"
-      end
-    end
-
-    ##
-    # Update the stored graph
-    def update new_graph = nil
-      new_graph ||= graph
-      client.put subject, new_graph.dump(:ttl) do |req|
-        req.headers['If-Match'] = get.etag if retrieved_content?
       end
     end
     
@@ -36,7 +26,7 @@ module Ldp
     end
 
     def graph
-      return @graph if new?
+      @graph ||= RDF::Graph.new if new?
       @graph ||= begin
         original_graph = get.graph
 

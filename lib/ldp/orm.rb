@@ -11,6 +11,14 @@ module Ldp
     def subject_uri
       resource.subject_uri
     end
+    
+    def new?
+      resource.new?
+    end
+    
+    def persisted?
+      !new?
+    end
 
     def graph
       Ldp.instrument 'graph.orm.ldp', subject: subject_uri do
@@ -46,7 +54,7 @@ module Ldp
 
     def save
       Ldp.instrument 'save.orm.ldp', subject: subject_uri do
-        @last_response = resource.update
+        @last_response = resource.save
 
         diff = resource.check_for_differences_and_reload
 
