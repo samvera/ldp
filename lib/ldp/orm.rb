@@ -7,40 +7,54 @@ module Ldp
     def initialize resource
       @resource = resource
     end
+    
+    def subject_uri
+      resource.subject_uri
+    end
 
     def graph
-      resource.graph
+      Ldp.instrument 'graph.orm.ldp', subject: subject_uri do
+        resource.graph
+      end
     end
 
     def value predicate
-      graph.query(:subject => resource.subject_uri, :predicate => predicate).map do |stmt|
+      graph.query(:subject => subject_uri, :predicate => predicate).map do |stmt|
         stmt.object
       end
     end
 
     def query *args, &block
-      graph.query *args, &block
+      Ldp.instrument 'query.orm.ldp', subject: subject_uri do
+        graph.query *args, &block
+      end
     end
 
     def reload
-      Ldp::Orm.new resource.reload
+      Ldp.instrument 'reload.orm.ldp', subject: subject_uri do
+        Ldp::Orm.new resource.reload
+      end
     end
 
     def create
-      # resource.create returns a reloaded resource which causes any default URIs (e.g. "<>")
-      # in the graph to be transformed to routable URIs
-      Ldp::Orm.new resource.create
+      Ldp.instrument 'create.orm.ldp', subject: subject_uri do
+        # resource.create returns a reloaded resource which causes any default URIs (e.g. "<>")
+        # in the graph to be transformed to routable URIs
+        Ldp::Orm.new resource.create
+      end
     end
 
     def save
-      @last_response = resource.update
+      Ldp.instrument 'save.orm.ldp', subject: subject_uri do
+        @last_response = resource.update
 
-      diff = resource.check_for_differences_and_reload
+        diff = resource.check_for_differences_and_reload
 
-      if diff.any?
-        diff
-      else
-        @last_response.success?
+        if diff.any?
+          diff
+        else
+          @last_response.success?
+        end
       end
     rescue Ldp::HttpError => e
       @last_response = e
@@ -61,7 +75,9 @@ module Ldp
     end
 
     def delete
-      resource.delete
+      Ldp.instrument 'delete.orm.ldp', subject: subject_uri do
+        resource.delete
+      end
     end
 
     def method_missing meth, *args, &block
