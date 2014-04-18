@@ -7,6 +7,7 @@ describe Ldp::Resource do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
       stub.head('/not_found_resource') { [404] }
       stub.get('/not_found_resource') { [404] }
+      stub.head('/a_new_resource') { [404] }
       stub.head('/a_resource') { [200] }
       stub.get('/a_resource') { [200] }
     end
@@ -52,6 +53,17 @@ describe Ldp::Resource do
       let(:path) { '/a_resource' }
       it "should be false" do  
         expect(subject).to_not be_new
+      end
+    end
+  end
+  
+  describe "#create" do
+    context "with initial content" do
+      let(:path) { '/a_new_resource' }
+      it "should post an RDF graph" do
+        mock_client.should_receive(:post).with(path, "xyz").and_return(double(headers: {}))
+        subject.content = "xyz"
+        subject.save
       end
     end
   end

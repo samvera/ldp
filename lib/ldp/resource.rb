@@ -4,10 +4,12 @@ module Ldp
     require 'ldp/resource/rdf_source'
 
     attr_reader :client, :subject
+    attr_accessor :content
 
-    def initialize client, subject
+    def initialize client, subject, response = nil
       @client = client
       @subject = subject
+      @get = response if response.is_a? Faraday::Response and current? response
     end
 
     ##
@@ -54,12 +56,16 @@ module Ldp
       end
     end
     
+    def save
+      new? ? create : update
+    end
+    
     ##
     # Create a new resource at the URI
     # @return [RdfSource] the new representation
     def create &block
       raise "Can't call create on an existing resource" unless new?
-      resp = client.post((subject || "")) do |req|
+      resp = client.post((subject || ""), content) do |req|
         
         yield req if block_given?
       end
@@ -67,6 +73,15 @@ module Ldp
       @subject = resp.headers['Location']
       @subject_uri = nil
       reload
+    end
+    
+    ##
+    # Update the stored graph
+    def update new_content = nil
+      new_content ||= content
+      client.put subject, new_content do |req|
+        req.headers['If-Match'] = get.etag if retrieved_content?
+      end
     end
 
     def current? response = nil

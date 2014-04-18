@@ -3,11 +3,10 @@ module Ldp
     attr_accessor :content
 
     def initialize client, subject, content_or_response = nil
-      super client, subject
+      super client, subject, content_or_response
       
       case content_or_response
       when Faraday::Response
-        @get = content_or_response if current? content_or_response
       else
         @content = content_or_response
       end
@@ -15,14 +14,6 @@ module Ldp
     
     def content
       @content ||= get.body
-    end
-
-    ##
-    # Update the stored graph
-    def update new_graph = nil
-      client.put subject, content do |req|
-        req.headers['If-Match'] = get.etag if retrieved_content?
-      end
     end
     
     def described_by
