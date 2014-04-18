@@ -25,7 +25,7 @@ module Ldp
     ##
     # Is the resource new, or does it exist in the LDP server?
     def new?
-      subject.nil? || !client.head(subject)
+      subject.nil? || !head
     rescue Ldp::NotFound
       true
     end
@@ -40,6 +40,10 @@ module Ldp
     # Get the resource
     def get
       @get ||= client.get(subject)
+    end
+    
+    def head
+      @head ||= @get || client.head(subject)
     end
 
     ##
