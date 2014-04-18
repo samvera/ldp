@@ -8,7 +8,7 @@ module Ldp
         when RDF::Graph
           @graph = graph_or_response
         when Ldp::Response
-          @get = graph_or_response
+          @get = graph_or_response if current? graph_or_response
         when NilClass
           #nop
         else
