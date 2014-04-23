@@ -55,14 +55,7 @@ module Ldp
     def save
       Ldp.instrument 'save.orm.ldp', subject: subject_uri do
         @last_response = resource.save
-
-        diff = resource.check_for_differences_and_reload
-
-        if diff.any?
-          diff
-        else
-          @last_response.success?
-        end
+        @last_response.success?
       end
     rescue Ldp::HttpError => e
       @last_response = e

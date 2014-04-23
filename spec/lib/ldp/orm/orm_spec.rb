@@ -56,12 +56,6 @@ describe Ldp::Orm do
       expect(subject.save).to be_true
     end
 
-    it "should provide a graph of differences if the post-save graph doesn't match our graph" do
-      subject.graph << RDF::Statement.new(:subject => subject.resource.subject_uri, :predicate => RDF::URI.new("info:some-predicate"), :object => RDF::Literal.new("xyz"))
-      result = subject.save
-      expect(result).to_not be_empty
-    end
-
     it "should return false if the response was not successful" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
       conn_stubs.put('/a_resource') {[412, nil, 'There was an error']}
@@ -70,11 +64,6 @@ describe Ldp::Orm do
   end
 
   describe "#save!" do
-    it "should raise an exception if there are differences after saving the graph" do
-      subject.graph << RDF::Statement.new(:subject => subject.resource.subject_uri, :predicate => RDF::URI.new("info:some-predicate"), :object => RDF::Literal.new("xyz"))
-      expect { subject.save! }.to raise_exception(Ldp::GraphDifferenceException)
-    end
-
     it "should raise an exception if the ETag didn't match" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
       conn_stubs.put('/a_resource') {[412, {}, "Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'"]}
