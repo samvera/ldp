@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Ldp::Response do
-  LDP_RESOURCE_HEADERS = { "Link" => Ldp.resource.to_s + ";rel=\"type\""}
+  LDP_RESOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\""}
 
   let(:mock_response) { double(headers: {}, env: { url: "info:a" }) }
   let(:mock_client) { double(Ldp::Client) }
@@ -21,10 +21,10 @@ describe Ldp::Response do
     it "should extract link headers with relations as a hash" do
       mock_response.stub(:headers => { 
         "Link" => [
-            "xyz;rel=\"some-rel\"",
-            "abc;rel=\"some-multi-rel\"",
-            "123;rel=\"some-multi-rel\"",
-            "vanilla-link"
+            "<xyz>;rel=\"some-rel\"",
+            "<abc>;rel=\"some-multi-rel\"",
+            "<123>;rel=\"some-multi-rel\"",
+            "<vanilla-link>"
           ] 
         })
       h = Ldp::Response.links mock_response
@@ -47,7 +47,7 @@ describe Ldp::Response do
     it "should be a resource if a Link[rel=type] header asserts it is an ldp:resource" do
       mock_response.stub(:headers => { 
         "Link" => [
-            "#{Ldp.resource};rel=\"type\""
+            "<#{Ldp.resource}>;rel=\"type\""
           ] 
       })
       expect(Ldp::Response.resource? mock_response).to be_true

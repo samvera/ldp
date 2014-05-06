@@ -7,7 +7,7 @@ describe Ldp::Resource::RdfSource do
 
   let(:conn_stubs) do
     Faraday::Adapter::Test::Stubs.new do |stub|
-      # stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
+      # stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph ]}
       stub.post("/") { [201]}
       stub.post("/abs_url_object") { [201]}
     end

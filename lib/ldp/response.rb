@@ -15,7 +15,7 @@ module Ldp
     def self.links response
       h = {}
       Array(response.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
-        m = header.match(/(?<link>.*);\s?rel="(?<rel>[^"]+)"/)
+        m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
         if m
           memo[m[:rel]] ||= []
           memo[m[:rel]] << m[:link]

@@ -22,8 +22,8 @@ describe "Ldp::Client" do
   let(:conn_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
       stub.head('/a_resource') {[ 200 ]}  
-      stub.get('/a_resource') {[ 200, {"Link" => "http://www.w3.org/ns/ldp#Resource;rel=\"type\""}, simple_graph ]}
-      stub.get('/a_container') {[ 200, {"Link" => ["http://www.w3.org/ns/ldp#Resource;rel=\"type\"","http://www.w3.org/ns/ldp#BasicContainer;rel=\"type\""]}, simple_container_graph ]}
+      stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph ]}
+      stub.get('/a_container') {[ 200, {"Link" => ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""]}, simple_container_graph ]}
       stub.head('/a_binary_resource') { [200]}    
       stub.get('/a_binary_resource') { [200, {}, ""]}
       stub.put("/a_resource") { [204]}
