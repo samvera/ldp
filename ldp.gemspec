@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["chris@cbeer.info"]
   spec.description   = %q{Linked Data Platform client library}
   spec.summary       = spec.description
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/cbeer/ldp"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
