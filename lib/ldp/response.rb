@@ -113,13 +113,21 @@ module Ldp
     ##
     # Extract the ETag for the resource
     def etag
-      headers['ETag']
+      @etag ||= headers['ETag']
+    end
+
+    def etag=(val)
+      @etag = val
     end
 
     ##
     # Extract the last modified header for the resource
     def last_modified
-      headers['Last-Modified']
+      @last_modified ||= headers['Last-Modified']
+    end
+
+    def last_modified=(val)
+      @last_modified = val
     end
 
     ##

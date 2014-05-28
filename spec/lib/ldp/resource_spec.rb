@@ -61,7 +61,7 @@ describe Ldp::Resource do
     context "with initial content" do
       let(:path) { '/a_new_resource' }
       it "should post an RDF graph" do
-        mock_client.should_receive(:post).with(path, "xyz").and_return(double(headers: {}))
+        mock_client.should_receive(:put).with(path, "xyz").and_return(double(headers: {}))
         subject.content = "xyz"
         subject.save
       end
