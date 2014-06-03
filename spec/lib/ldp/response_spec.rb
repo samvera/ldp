@@ -50,7 +50,7 @@ describe Ldp::Response do
             "<#{Ldp.resource}>;rel=\"type\""
           ] 
       })
-      expect(Ldp::Response.resource? mock_response).to be_true
+      expect(Ldp::Response.resource? mock_response).to be_truthy
     end
   end
 

@@ -66,7 +66,7 @@ describe "Ldp::Client" do
       resp = subject.get "a_resource"
       expect(resp).to be_a_kind_of(Ldp::Response)
       expect(resp.body).to eq(simple_graph)
-      expect(resp.resource?).to be_true
+      expect(resp.resource?).to be_truthy
     end
 
     it "should accept a block to change the HTTP request" do
