@@ -53,13 +53,13 @@ describe Ldp::Orm do
 
   describe "#save" do
     it "should update the resource from the graph" do
-      expect(subject.save).to be_true
+      expect(subject.save).to be_truthy
     end
 
     it "should return false if the response was not successful" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
       conn_stubs.put('/a_resource') {[412, nil, 'There was an error']}
-      expect(subject.save).to be_false
+      expect(subject.save).to be_falsey
     end
   end
 
