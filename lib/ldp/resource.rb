@@ -65,7 +65,8 @@ module Ldp
     # @return [RdfSource] the new representation
     def create &block
       raise "Can't call create on an existing resource" unless new?
-      resp = client.post((subject || ""), content) do |req|
+      verb = subject.nil? ? :post : :put
+      resp = client.send(verb, (subject || ""), content) do |req|
         
         yield req if block_given?
       end
@@ -79,9 +80,11 @@ module Ldp
     # Update the stored graph
     def update new_content = nil
       new_content ||= content
-      client.put subject, new_content do |req|
+      resp = client.put subject, new_content do |req|
         req.headers['If-Match'] = get.etag if retrieved_content?
       end
+      update_cached_get(resp) if retrieved_content?
+      resp
     end
 
     def current? response = nil
@@ -95,5 +98,15 @@ module Ldp
         new_response.headers['ETag'] == response.headers['ETag'] &&
         new_response.headers['Last-Modified'] == response.headers['Last-Modified']
     end
+
+    def update_cached_get response
+      Response.wrap(client, response)
+      if response.etag.nil? || response.last_modified.nil?
+        response = Response.wrap(client, client.head(subject))
+      end
+      @get.etag = response.etag
+      @get.last_modified = response.last_modified
+    end
+
   end
 end
