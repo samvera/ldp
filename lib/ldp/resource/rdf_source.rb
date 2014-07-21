@@ -1,8 +1,8 @@
 module Ldp
   class Resource::RdfSource < Ldp::Resource
 
-    def initialize client, subject, graph_or_response = nil
-      super client, subject, graph_or_response
+    def initialize client, subject, graph_or_response = nil, base_path = ''
+      super
 
       case graph_or_response
         when RDF::Graph

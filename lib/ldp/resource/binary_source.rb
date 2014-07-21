@@ -2,8 +2,8 @@ module Ldp
   class Resource::BinarySource < Ldp::Resource
     attr_accessor :content
 
-    def initialize client, subject, content_or_response = nil
-      super client, subject, content_or_response
+    def initialize client, subject, content_or_response = nil, base_path = ''
+      super
       
       case content_or_response
       when Faraday::Response
