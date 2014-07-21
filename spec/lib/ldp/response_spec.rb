@@ -19,14 +19,14 @@ describe Ldp::Response do
 
   describe ".links" do
     it "should extract link headers with relations as a hash" do
-      mock_response.stub(:headers => { 
+      allow(mock_response).to receive(:headers).and_return(
         "Link" => [
             "<xyz>;rel=\"some-rel\"",
             "<abc>;rel=\"some-multi-rel\"",
             "<123>;rel=\"some-multi-rel\"",
             "<vanilla-link>"
           ] 
-        })
+        )
       h = Ldp::Response.links mock_response
 
       expect(h['some-rel']).to include("xyz")
@@ -35,7 +35,7 @@ describe Ldp::Response do
     end
 
     it "should return an empty hash if no link headers are availabe" do
-      mock_response.stub(:headers => {})
+      allow(mock_response).to receive(:headers).and_return({})
       h = Ldp::Response.links mock_response
 
       expect(h).to be_empty
@@ -45,18 +45,19 @@ describe Ldp::Response do
 
   describe ".resource?" do
     it "should be a resource if a Link[rel=type] header asserts it is an ldp:resource" do
-      mock_response.stub(:headers => { 
+      allow(mock_response).to receive(:headers).and_return(
         "Link" => [
             "<#{Ldp.resource}>;rel=\"type\""
           ] 
-      })
+        )
       expect(Ldp::Response.resource? mock_response).to be_truthy
     end
   end
 
   describe "#graph" do
     it "should parse the response body for an RDF graph" do
-      mock_response.stub :body => "<> <info:b> <info:c> .", :headers => LDP_RESOURCE_HEADERS
+      allow(mock_response).to receive(:body).and_return("<> <info:b> <info:c> .")
+      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
       graph = subject.graph
      
       expect(graph).to have_subject(RDF::URI.new("info:a")) 
@@ -67,7 +68,7 @@ describe Ldp::Response do
 
   describe "#etag" do
     it "should pass through the response's ETag" do
-      mock_response.stub :headers => { 'ETag' => 'xyz'}
+      allow(mock_response).to receive(:headers).and_return('ETag' => 'xyz')
 
       expect(subject.etag).to eq('xyz')
     end
@@ -75,7 +76,7 @@ describe Ldp::Response do
 
   describe "#last_modified" do
     it "should pass through the response's Last-Modified" do
-      mock_response.stub :headers => { 'Last-Modified' => 'some-date'}
+      allow(mock_response).to receive(:headers).and_return('Last-Modified' => 'some-date')
       expect(subject.last_modified).to eq('some-date')
     end
   end
@@ -86,14 +87,16 @@ describe Ldp::Response do
 
       graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
 
-      mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
+      allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
+      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
 
       expect(subject).to have_page
     end
 
     it "should be false otherwise" do
-      subject.stub :page_subject => RDF::URI.new('info:a')
-      mock_response.stub :body => '', :headers => LDP_RESOURCE_HEADERS
+      allow(subject).to receive(:page_subject).and_return RDF::URI.new('info:a')
+      allow(mock_response).to receive(:body).and_return('')
+      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
       expect(subject).not_to have_page
     end
   end
@@ -105,7 +108,8 @@ describe Ldp::Response do
       graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
       graph << [RDF::URI.new('info:b'), RDF.type, Ldp.page]
 
-      mock_response.stub :body => graph.dump(:ttl), :headers => LDP_RESOURCE_HEADERS
+      allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
+      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
 
       expect(subject.page.count).to eq(1)
    
@@ -114,8 +118,9 @@ describe Ldp::Response do
 
   describe "#subject" do
     it "should extract the HTTP request URI as an RDF URI" do
-      mock_response.stub :body => '', :headers => LDP_RESOURCE_HEADERS
-      mock_response.stub :env => { :url => 'http://xyz/a'}
+      allow(mock_response).to receive(:body).and_return('')
+      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
+      allow(mock_response).to receive(:env).and_return(:url => 'http://xyz/a')
       expect(subject.subject).to eq(RDF::URI.new("http://xyz/a"))
     end
   end

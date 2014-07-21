@@ -6,10 +6,11 @@ module Ldp
     attr_reader :client, :subject
     attr_accessor :content
 
-    def initialize client, subject, response = nil
+    def initialize client, subject, response = nil, base_path = ''
       @client = client
       @subject = subject
       @get = response if response.is_a? Faraday::Response and current? response
+      @base_path = base_path
     end
 
     ##
@@ -66,7 +67,7 @@ module Ldp
     def create &block
       raise "Can't call create on an existing resource" unless new?
       verb = subject.nil? ? :post : :put
-      resp = client.send(verb, (subject || ""), content) do |req|
+      resp = client.send(verb, (subject || @base_path), content) do |req|
         
         yield req if block_given?
       end

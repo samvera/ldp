@@ -32,7 +32,7 @@ describe Ldp::Orm do
 
   describe "#delete" do
     it "should delete the LDP resource" do
-      test_resource.should_receive(:delete)
+      expect(test_resource).to receive(:delete)
       subject.delete
     end
   end
@@ -53,13 +53,13 @@ describe Ldp::Orm do
 
   describe "#save" do
     it "should update the resource from the graph" do
-      expect(subject.save).to be_truthy
+      expect(subject.save).to be true
     end
 
     it "should return false if the response was not successful" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
       conn_stubs.put('/a_resource') {[412, nil, 'There was an error']}
-      expect(subject.save).to be_falsey
+      expect(subject.save).to be false
     end
   end
 

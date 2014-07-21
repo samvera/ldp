@@ -35,7 +35,7 @@ describe Ldp::Resource::RdfSource do
     
     it "should allow absolute URLs to the LDP server" do
       obj = Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/abs_url_object"
-      obj.stub(new?: true)
+      allow(obj).to receive(:new?).and_return(true)
       created_resource = obj.create
       expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
     end

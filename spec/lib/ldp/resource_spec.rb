@@ -58,12 +58,31 @@ describe Ldp::Resource do
   end
   
   describe "#create" do
+    let(:path) { '/a_new_resource' }
     context "with initial content" do
-      let(:path) { '/a_new_resource' }
       it "should post an RDF graph" do
-        mock_client.should_receive(:put).with(path, "xyz").and_return(double(headers: {}))
+        expect(mock_client).to receive(:put).with(path, "xyz").and_return(double(headers: {}))
         subject.content = "xyz"
         subject.save
+      end
+    end
+    context "with a base path content (create a subresource)" do
+      let(:base_path) { '/foo' }
+      context "Of the root" do
+        subject { Ldp::Resource.new(mock_client, nil, nil, base_path) }
+        it "should post an RDF graph" do
+          expect(mock_client).to receive(:post).with(base_path, "xyz").and_return(double(headers: {}))
+          subject.content = "xyz"
+          subject.save
+        end
+      end
+      context "of some other element" do
+        subject { Ldp::Resource.new(mock_client, path, nil, base_path) }
+        it "should ignore the base path" do
+          expect(mock_client).to receive(:put).with(path, "xyz").and_return(double(headers: {}))
+          subject.content = "xyz"
+          subject.save
+        end
       end
     end
   end
