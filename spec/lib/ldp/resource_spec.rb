@@ -59,31 +59,54 @@ describe Ldp::Resource do
   
   describe "#create" do
     let(:path) { '/a_new_resource' }
-    context "with initial content" do
-      it "should post an RDF graph" do
-        expect(mock_client).to receive(:put).with(path, "xyz").and_return(double(headers: {}))
-        subject.content = "xyz"
-        subject.save
+    context "with a subject uri" do
+      let(:conn_stubs) do
+        Faraday::Adapter::Test::Stubs.new do |stub|
+          stub.head(path) { [404] }
+          stub.put(path) { [200, {'Last-Modified' => 'Tue, 22 Jul 2014 02:23:32 GMT' }] }
+        end
+      end
+
+      context "and without a base path" do
+        it "should post an RDF graph" do
+          subject.content = "xyz"
+          subject.save
+          expect(subject.last_modified).to eq "Tue, 22 Jul 2014 02:23:32 GMT"
+        end
+      end
+
+      context "and with a base path" do
+        let(:base_path) { '/foo' }
+
+        subject { Ldp::Resource.new(mock_client, path, nil, base_path) }
+
+        it "should ignore the base path" do
+          subject.content = "xyz"
+          subject.save
+          expect(subject.last_modified).to eq "Tue, 22 Jul 2014 02:23:32 GMT"
+        end
       end
     end
-    context "with a base path content (create a subresource)" do
-      let(:base_path) { '/foo' }
-      context "Of the root" do
+
+    context "without a subject" do
+      context "and with a base path" do
+        let(:base_path) { '/foo' }
+
+        let(:conn_stubs) do
+          Faraday::Adapter::Test::Stubs.new do |stub|
+            stub.post(base_path) { [200, {'Last-Modified' => 'Tue, 22 Jul 2014 02:23:32 GMT' }] }
+          end
+        end
+
         subject { Ldp::Resource.new(mock_client, nil, nil, base_path) }
+
         it "should post an RDF graph" do
-          expect(mock_client).to receive(:post).with(base_path, "xyz").and_return(double(headers: {}))
           subject.content = "xyz"
           subject.save
+          expect(subject.last_modified).to eq "Tue, 22 Jul 2014 02:23:32 GMT"
         end
       end
-      context "of some other element" do
-        subject { Ldp::Resource.new(mock_client, path, nil, base_path) }
-        it "should ignore the base path" do
-          expect(mock_client).to receive(:put).with(path, "xyz").and_return(double(headers: {}))
-          subject.content = "xyz"
-          subject.save
-        end
-      end
+
     end
   end
 end

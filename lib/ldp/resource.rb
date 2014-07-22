@@ -13,6 +13,10 @@ module Ldp
       @base_path = base_path
     end
 
+    def last_modified
+      (@get && @get.last_modifed) || @last_modified
+    end
+
     ##
     # Get the graph subject as a URI
     def subject_uri
@@ -73,6 +77,7 @@ module Ldp
       end
 
       @subject = resp.headers['Location']
+      @last_modified = resp.headers['Last-Modified']
       @subject_uri = nil
       reload
     end
