@@ -71,7 +71,6 @@ describe Ldp::Resource do
         it "should post an RDF graph" do
           subject.content = "xyz"
           subject.save
-          expect(subject.last_modified).to eq "Tue, 22 Jul 2014 02:23:32 GMT"
         end
       end
 
@@ -83,7 +82,6 @@ describe Ldp::Resource do
         it "should ignore the base path" do
           subject.content = "xyz"
           subject.save
-          expect(subject.last_modified).to eq "Tue, 22 Jul 2014 02:23:32 GMT"
         end
       end
     end
@@ -103,7 +101,6 @@ describe Ldp::Resource do
         it "should post an RDF graph" do
           subject.content = "xyz"
           subject.save
-          expect(subject.last_modified).to eq "Tue, 22 Jul 2014 02:23:32 GMT"
         end
       end
 
