@@ -67,7 +67,7 @@ describe Ldp::Orm do
     it "should raise an exception if the ETag didn't match" do
       conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
       conn_stubs.put('/a_resource') {[412, {}, "Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'"]}
-      expect { subject.save! }.to raise_exception(Ldp::SaveException, "STATUS: 412 Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'...")
+      expect { subject.save! }.to raise_exception(Ldp::EtagMismatch, "Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'")
     end
   end
 

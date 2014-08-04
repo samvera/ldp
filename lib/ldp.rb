@@ -19,6 +19,7 @@ module Ldp
 
   class HttpError < RuntimeError; end
   class NotFound < HttpError; end
+  class EtagMismatch < HttpError; end
 
   class << self
     def logger

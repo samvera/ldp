@@ -104,8 +104,14 @@ module Ldp::Client::Methods
   def check_for_errors resp
     resp.tap do |resp|
       unless resp.success?
-        raise Ldp::NotFound.new(resp.body) if resp.status == 404
-        raise Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
+        raise case resp.status
+          when 404
+            Ldp::NotFound.new(resp.body) if resp.status == 404
+          when 412
+            Ldp::EtagMismatch.new(resp.body) if resp.status == 412
+          else
+            Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
+          end
       end
     end
   end

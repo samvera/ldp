@@ -69,7 +69,7 @@ module Ldp
       if result.is_a? RDF::Graph
         raise GraphDifferenceException.new "", result
       elsif !result
-        raise SaveException.new @last_response
+        raise @last_response
       end
 
       result
@@ -102,8 +102,5 @@ module Ldp
       super(message)
       @diff = diff
     end
-  end
-
-  class SaveException < RuntimeError
   end
 end
