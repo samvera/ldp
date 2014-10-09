@@ -44,7 +44,7 @@ module Ldp
     def get
       @get ||= client.get(subject)
     end
-    
+
     def head
       @head ||= @get || client.head(subject)
     end
@@ -56,11 +56,11 @@ module Ldp
         req.headers['If-Match'] = get.etag if retrieved_content?
       end
     end
-    
+
     def save
       new? ? create : update
     end
-    
+
     ##
     # Create a new resource at the URI
     # @return [RdfSource] the new representation
@@ -68,7 +68,7 @@ module Ldp
       raise "Can't call create on an existing resource" unless new?
       verb = subject.nil? ? :post : :put
       resp = client.send(verb, (subject || @base_path), content) do |req|
-        
+
         yield req if block_given?
       end
 
@@ -76,7 +76,7 @@ module Ldp
       @subject_uri = nil
       reload
     end
-    
+
     ##
     # Update the stored graph
     def update new_content = nil
@@ -91,7 +91,7 @@ module Ldp
     def current? response = nil
       response ||= @get
       return true if new? and subject.nil?
-      
+
       new_response = client.head(subject)
 
       response.headers['ETag'] &&

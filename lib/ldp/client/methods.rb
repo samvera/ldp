@@ -3,19 +3,19 @@ require 'faraday'
 ##
 # HTTP client methods for making requests to an LDP resource and getting a response back.
 module Ldp::Client::Methods
-  
+
   attr_reader :http
   def initialize_http_client *http_client
     if http_client.length == 1 and http_client.first.is_a? Faraday::Connection
       @http = http_client.first
-    else 
-      @http = Faraday.new *http_client  
+    else
+      @http = Faraday.new *http_client
     end
   end
-  
+
   def head url
     logger.debug "LDP: HEAD [#{url}]"
-    resp = http.head do |req|                          
+    resp = http.head do |req|
       req.url munge_to_relative_url(url)
 
       yield req if block_given?
@@ -27,7 +27,7 @@ module Ldp::Client::Methods
   # Get a LDP Resource by URI
   def get url, options = {}
     logger.debug "LDP: GET [#{url}]"
-    resp = http.get do |req|                          
+    resp = http.get do |req|
       req.url munge_to_relative_url(url)
 
       if options[:minimal]
@@ -35,7 +35,7 @@ module Ldp::Client::Methods
       else
         includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
         omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
-        req.headers["Prefer"] = ["return=representation", 
+        req.headers["Prefer"] = ["return=representation",
           ("include=\"#{includes.join(" ")}\"" unless includes.empty?),
           ("omit=\"#{omits.join(" ")}\"" unless omits.empty?)
         ].compact.join("; ")
@@ -49,7 +49,7 @@ module Ldp::Client::Methods
     else
       resp
     end
-    
+
     check_for_errors(resp)
   end
 
@@ -100,7 +100,7 @@ module Ldp::Client::Methods
     check_for_errors(resp)
   end
   private
-  
+
   def check_for_errors resp
     resp.tap do |resp|
       unless resp.success?
@@ -119,14 +119,14 @@ module Ldp::Client::Methods
   def default_headers
     {"Content-Type"=>"text/turtle"}
   end
-  
+
   def default_patch_headers
     {"Content-Type"=>"application/sparql-update"}
   end
   ##
   # Some valid query paths can be mistaken for absolute URIs
   # with an alternative scheme. If the scheme isn't HTTP(S), assume
-  # they meant a relative URI instead. 
+  # they meant a relative URI instead.
   def munge_to_relative_url url
     purl = URI.parse(url)
     if purl.absolute? and !((purl.scheme rescue nil) =~ /^http/)

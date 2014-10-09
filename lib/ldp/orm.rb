@@ -7,15 +7,15 @@ module Ldp
     def initialize resource
       @resource = resource
     end
-    
+
     def subject_uri
       resource.subject_uri
     end
-    
+
     def new?
       resource.new?
     end
-    
+
     def persisted?
       !new?
     end
