@@ -1,7 +1,8 @@
 require 'spec_helper'
 
 describe Ldp::Response do
-  LDP_RESOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\""}
+  LDP_RDF_RESOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\", <#{Ldp.direct_container.to_s}>;rel=\"type\""}
+  LDP_NON_RDF_SOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\", <#{Ldp.non_rdf_source.to_s}>;rel=\"type\""}
 
   let(:mock_response) { double(headers: {}, env: { url: "info:a" }) }
   let(:mock_client) { double(Ldp::Client) }
@@ -48,21 +49,30 @@ describe Ldp::Response do
       allow(mock_response).to receive(:headers).and_return(
         "Link" => [
             "<#{Ldp.resource}>;rel=\"type\""
-          ] 
+          ]
         )
-      expect(Ldp::Response.resource? mock_response).to be_truthy
+      expect(Ldp::Response.resource? mock_response).to be true
     end
   end
 
   describe "#graph" do
-    it "should parse the response body for an RDF graph" do
-      allow(mock_response).to receive(:body).and_return("<> <info:b> <info:c> .")
-      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
-      graph = subject.graph
-     
-      expect(graph).to have_subject(RDF::URI.new("info:a")) 
-      expect(graph).to have_statement RDF::Statement.new(RDF::URI.new("info:a"), RDF::URI.new("info:b"), RDF::URI.new("info:c"))
+    context "for an RDFSource (or Container)" do
+      it "should parse the response body for an RDF graph" do
+        allow(mock_response).to receive(:body).and_return("<> <info:b> <info:c> .")
+        allow(mock_response).to receive(:headers).and_return(LDP_RDF_RESOURCE_HEADERS)
+        graph = subject.graph
 
+        expect(graph).to have_subject(RDF::URI.new("info:a"))
+        expect(graph).to have_statement RDF::Statement.new(RDF::URI.new("info:a"), RDF::URI.new("info:b"), RDF::URI.new("info:c"))
+      end
+    end
+
+    context "for a NonRDFSource" do
+      it "should parse the response body for an RDF graph" do
+        allow(mock_response).to receive(:body).and_return("<> <info:b> <info:c> .")
+        allow(mock_response).to receive(:headers).and_return(LDP_NON_RDF_SOURCE_HEADERS)
+        expect { subject.graph }.to raise_error Ldp::UnexpectedContentType
+      end
     end
   end
 
@@ -81,23 +91,34 @@ describe Ldp::Response do
     end
   end
 
-  describe "#has_page" do
-    it "should see if the response has an ldp:Page statement" do
-      graph = RDF::Graph.new
+  describe "#has_page?" do
+    context "for an RDF Source" do
+      before do
+        allow(mock_response).to receive(:headers).and_return(LDP_RDF_RESOURCE_HEADERS)
+      end
 
-      graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
+      it "should see if the response has an ldp:Page statement" do
+        graph = RDF::Graph.new
+        graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
+        allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
+        expect(subject).to have_page
+      end
 
-      allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
-      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
-
-      expect(subject).to have_page
+      it "should be false otherwise" do
+        # allow(subject).to receive(:page_subject).and_return RDF::URI.new('info:a')
+        graph = RDF::Graph.new
+        allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
+        expect(subject).not_to have_page
+      end
     end
 
-    it "should be false otherwise" do
-      allow(subject).to receive(:page_subject).and_return RDF::URI.new('info:a')
-      allow(mock_response).to receive(:body).and_return('')
-      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
-      expect(subject).not_to have_page
+    context "with a non-rdf-source" do
+      it "should be false" do
+        # allow(subject).to receive(:page_subject).and_return RDF::URI.new('info:a')
+        # allow(mock_response).to receive(:body).and_return('')
+        allow(mock_response).to receive(:headers).and_return(LDP_NON_RDF_SOURCE_HEADERS)
+        expect(subject).not_to have_page
+      end
     end
   end
 
@@ -109,17 +130,16 @@ describe Ldp::Response do
       graph << [RDF::URI.new('info:b'), RDF.type, Ldp.page]
 
       allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
-      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
+      allow(mock_response).to receive(:headers).and_return(LDP_RDF_RESOURCE_HEADERS)
 
       expect(subject.page.count).to eq(1)
-   
     end
   end
 
   describe "#subject" do
     it "should extract the HTTP request URI as an RDF URI" do
       allow(mock_response).to receive(:body).and_return('')
-      allow(mock_response).to receive(:headers).and_return(LDP_RESOURCE_HEADERS)
+      allow(mock_response).to receive(:headers).and_return(LDP_RDF_RESOURCE_HEADERS)
       allow(mock_response).to receive(:env).and_return(:url => 'http://xyz/a')
       expect(subject.subject).to eq(RDF::URI.new("http://xyz/a"))
     end

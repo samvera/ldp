@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe Ldp::Orm do
   subject { Ldp::Orm.new test_resource }
-  
+
   let(:simple_graph) do
     RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
   end
 
   let(:conn_stubs) do
     Faraday::Adapter::Test::Stubs.new do |stub|
-      stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph.dump(:ttl) ]}
+      stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\", <http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph.dump(:ttl) ]}
       stub.head('/a_resource') { [200] }
       stub.put("/a_resource") { [204]}
     end
@@ -81,7 +81,7 @@ describe Ldp::Orm do
     before do
       updated_graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello again, world!"]
       conn_stubs.get('/a_resource') {[200,
-                                      {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"",
+                                      {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\", <http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\"",
                                        "ETag" => "new-tag"},
                                       updated_graph.dump(:ttl)]}
     end

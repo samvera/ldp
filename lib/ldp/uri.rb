@@ -8,6 +8,14 @@ module Ldp::Uri
     uri("Resource")
   end
 
+  def rdf_source
+    uri("RDFSource")
+  end
+
+  def non_rdf_source
+    uri("NonRDFSource")
+  end
+
   def container
     uri("Container")
   end
@@ -15,19 +23,19 @@ module Ldp::Uri
   def basic_container
     uri("BasicContainer")
   end
-  
+
   def direct_container
     uri("DirectContainer")
   end
-  
+
   def indirect_container
     uri("IndirectContainer")
   end
-  
+
   def contains
     uri("contains")
   end
-  
+
   def page
     uri("Page")
   end

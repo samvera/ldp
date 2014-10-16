@@ -47,12 +47,19 @@ module Ldp
     # Is the response an LDP container?
     def self.container? response
       [
-        Ldp.basic_container, 
-        Ldp.direct_container, 
+        Ldp.basic_container,
+        Ldp.direct_container,
         Ldp.indirect_container
       ].any? { |x| Array(links(response)["type"]).include? x.to_s }
     end
-    
+
+    ##
+    # Is the response an LDP RDFSource?
+    #   ldp:Container is a subclass of ldp:RDFSource
+    def self.rdf_source? response
+      container?(response) || Array(links(response)["type"]).include?(Ldp.rdf_source)
+    end
+
     ##
     # Link: headers from the HTTP response
     def links
@@ -63,6 +70,12 @@ module Ldp
     # Is the response an LDP resource?
     def resource?
       Ldp::Response.resource?(self)
+    end
+
+    ##
+    # Is the response an LDP rdf source?
+    def rdf_source?
+      Ldp::Response.rdf_source?(self)
     end
 
     ##
@@ -89,13 +102,14 @@ module Ldp
     ##
     # Is the response paginated?
     def has_page?
-      graph.has_statement? RDF::Statement.new(page_subject, RDF.type, Ldp.page)
+      rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, Ldp.page))
     end
 
     ##
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
+        raise UnexpectedContentType, "The resource #{page_subject} is not an RDFSource" unless rdf_source?
         graph = RDF::Graph.new
 
         if resource?

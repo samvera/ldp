@@ -20,6 +20,7 @@ module Ldp
   class HttpError < RuntimeError; end
   class NotFound < HttpError; end
   class EtagMismatch < HttpError; end
+  class UnexpectedContentType < RuntimeError; end
 
   class << self
     def logger
@@ -27,7 +28,7 @@ module Ldp
         log.level = Logger::WARN
       end
     end
-    
+
     def instrument *args, &block
       if defined?(::ActiveSupport) && defined?(::ActiveSupport::Notifications)
         ActiveSupport::Notifications.instrument *args, &block
@@ -38,5 +39,4 @@ module Ldp
 
     attr_writer :logger
   end
-  
 end
