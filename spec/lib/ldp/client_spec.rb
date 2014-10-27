@@ -34,6 +34,7 @@ describe "Ldp::Client" do
       stub.get("http://test:8080/abc") { [200] }
       stub.put("/mismatch_resource") { [412] }
       stub.put("/conflict_resource") { [409, {}, ''] }
+      stub.get("/deleted_resource") { [410, {}, 'Gone'] }
     end
   end
 
@@ -170,6 +171,10 @@ describe "Ldp::Client" do
     describe "error checking" do
       it "should check for 409 errors" do
         expect { subject.put "conflict_resource", "some-payload" }.to raise_error Ldp::HttpError
+      end
+
+      it "should check for 410 errors" do
+        expect { subject.get "deleted_resource" }.to raise_error Ldp::Gone
       end
 
       it "should check for 412 errors" do

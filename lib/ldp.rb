@@ -18,8 +18,10 @@ module Ldp
   autoload :Orm, 'ldp/orm'
 
   class HttpError < RuntimeError; end
-  class NotFound < HttpError; end
-  class EtagMismatch < HttpError; end
+  class NotFound < HttpError; end # 404
+  class Gone < HttpError; end # 410
+  class EtagMismatch < HttpError; end # 412
+
   class UnexpectedContentType < RuntimeError; end
 
   class << self

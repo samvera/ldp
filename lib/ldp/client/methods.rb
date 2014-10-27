@@ -106,9 +106,11 @@ module Ldp::Client::Methods
       unless resp.success?
         raise case resp.status
           when 404
-            Ldp::NotFound.new(resp.body) if resp.status == 404
+            Ldp::NotFound.new(resp.body)
+          when 410
+            Ldp::Gone.new(resp.body)
           when 412
-            Ldp::EtagMismatch.new(resp.body) if resp.status == 412
+            Ldp::EtagMismatch.new(resp.body)
           else
             Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
           end
