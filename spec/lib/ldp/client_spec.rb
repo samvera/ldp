@@ -21,15 +21,15 @@ describe "Ldp::Client" do
 
   let(:conn_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
-      stub.head('/a_resource') {[ 200 ]}
-      stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph ]}
-      stub.get('/a_container') {[ 200, {"Link" => ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""]}, simple_container_graph ]}
-      stub.head('/a_binary_resource') { [200]}
-      stub.get('/a_binary_resource') { [200, {}, ""]}
+      stub.head('/a_resource') { [200] }
+      stub.get('/a_resource') { [200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph] }
+      stub.get('/a_container') { [200, {"Link" => ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""]}, simple_container_graph] }
+      stub.head('/a_binary_resource') { [200] }
+      stub.get('/a_binary_resource') { [200, {}, ""] }
       stub.put("/a_resource") { [204]}
-      stub.delete("/a_resource") { [204]}
-      stub.head('/a_container') {[ 200 ]}
-      stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
+      stub.delete("/a_resource") { [204] }
+      stub.head('/a_container') { [200] }
+      stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}] }
       stub.get("/test:1") { [200] }
       stub.get("http://test:8080/abc") { [200] }
       stub.put("/mismatch_resource") { [412] }
