@@ -21,17 +21,19 @@ describe "Ldp::Client" do
 
   let(:conn_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
-      stub.head('/a_resource') {[ 200 ]}  
+      stub.head('/a_resource') {[ 200 ]}
       stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph ]}
       stub.get('/a_container') {[ 200, {"Link" => ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""]}, simple_container_graph ]}
-      stub.head('/a_binary_resource') { [200]}    
+      stub.head('/a_binary_resource') { [200]}
       stub.get('/a_binary_resource') { [200, {}, ""]}
       stub.put("/a_resource") { [204]}
       stub.delete("/a_resource") { [204]}
-      stub.head('/a_container') {[ 200 ]}  
+      stub.head('/a_container') {[ 200 ]}
       stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}]}
       stub.get("/test:1") { [200] }
       stub.get("http://test:8080/abc") { [200] }
+      stub.put("/mismatch_resource") { [412] }
+      stub.put("/conflict_resource") { [409, {}, ''] }
     end
   end
 
@@ -61,7 +63,6 @@ describe "Ldp::Client" do
   end
 
   describe "get" do
-
     it "should GET content from the HTTP endpoint" do
       resp = subject.get "a_resource"
       expect(resp).to be_a_kind_of(Ldp::Response)
@@ -72,7 +73,7 @@ describe "Ldp::Client" do
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.get "a_resource", &b }.to yield_control
     end
-    
+
     context "should provide convenient accessors for LDP Prefer headers" do
       it "should set the minimal header" do
         subject.get "a_resource", minimal: true do |req|
@@ -90,13 +91,13 @@ describe "Ldp::Client" do
         end
       end
     end
-    
+
     context "with an invalid relative uri" do
       it "should work" do
         subject.get "test:1"
       end
     end
-    
+
     context "with an absolute uri" do
       it "should work" do
         subject.get "http://test:8080/abc"
@@ -130,13 +131,13 @@ describe "Ldp::Client" do
 
     it "should set default Content-type" do
       subject.post "a_container", 'foo' do |req|
-        expect(req.headers).to eq({ "Content-Type" => "text/turtle" }) 
+        expect(req.headers).to eq({ "Content-Type" => "text/turtle" })
       end
     end
 
     it "should set headers" do
       subject.post "a_container", 'foo', {'Content-Type' => 'application/pdf'} do |req|
-        expect(req.headers).to eq({ "Content-Type" => "application/pdf" }) 
+        expect(req.headers).to eq({ "Content-Type" => "application/pdf" })
       end
     end
 
@@ -162,7 +163,17 @@ describe "Ldp::Client" do
 
     it "should set headers" do
       subject.put "a_resource", 'payload', {'Content-Type' => 'application/pdf'} do |req|
-        expect(req.headers).to eq({ "Content-Type" => "application/pdf" }) 
+        expect(req.headers).to eq({ "Content-Type" => "application/pdf" })
+      end
+    end
+
+    describe "error checking" do
+      it "should check for 409 errors" do
+        expect { subject.put "conflict_resource", "some-payload" }.to raise_error Ldp::HttpError
+      end
+
+      it "should check for 412 errors" do
+        expect { subject.put "mismatch_resource", "some-payload" }.to raise_error Ldp::EtagMismatch
       end
     end
   end
@@ -179,7 +190,7 @@ describe "Ldp::Client" do
       expect(resource).to be_a_kind_of(Ldp::Resource)
       expect(resource).to be_a_kind_of(Ldp::Container)
     end
-    
+
     it "should be a binary resource" do
       resource = subject.find_or_initialize "a_binary_resource"
       expect(resource).to be_a_kind_of(Ldp::Resource::BinarySource)
