@@ -106,4 +106,19 @@ describe Ldp::Resource do
 
     end
   end
+
+  describe "#update" do
+    let(:path) { '/a_new_resource' }
+    let(:conn_stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.put(path, nil, {'Content-Type' => 'application/xml', "Content-Length"=>"0" }) { [200] }
+      end
+    end
+
+    it "should pass headers" do
+      subject.update do |req|
+        req.headers = {'Content-Type' => 'application/xml' }
+      end
+    end
+  end
 end

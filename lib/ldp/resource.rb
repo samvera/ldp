@@ -83,6 +83,7 @@ module Ldp
       new_content ||= content
       resp = client.put subject, new_content do |req|
         req.headers['If-Match'] = get.etag if retrieved_content?
+        yield req if block_given?
       end
       update_cached_get(resp) if retrieved_content?
       resp
