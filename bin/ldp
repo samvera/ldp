@@ -5,6 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'ldp'
 require 'slop'
+require 'http_logger'
 
 HttpLogger.logger = Logger.new(STDERR)
 HttpLogger.log_headers = true

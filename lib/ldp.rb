@@ -1,7 +1,6 @@
 require 'ldp/version'
 require 'linkeddata'
 require 'logger'
-require 'http_logger'
 
 module Ldp
   RDF::Graph.send(:include, RDF::Isomorphic)
