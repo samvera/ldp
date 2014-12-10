@@ -105,6 +105,14 @@ module Ldp::Client::Methods
     resp.tap do |resp|
       unless resp.success?
         raise case resp.status
+          when 400
+            if resp.env.method == :head
+              # If the request was a HEAD request (which only retrieves HTTP headers),
+              # re-run it as a GET in order to retrieve a message body (which is passed on as the error message)
+              get(resp.env.url.path)
+            else
+              Ldp::BadRequest.new(resp.body)
+            end
           when 404
             Ldp::NotFound.new(resp.body)
           when 410
