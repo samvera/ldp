@@ -28,9 +28,7 @@ module Ldp
     ##
     # Is the resource new, or does it exist in the LDP server?
     def new?
-      subject.nil? || !head
-    rescue Ldp::NotFound
-      true
+      subject.nil? || head == None
     end
 
     ##
@@ -46,7 +44,11 @@ module Ldp
     end
 
     def head
-      @head ||= @get || client.head(subject)
+      @head ||= begin
+        @get || client.head(subject)
+      rescue Ldp::NotFound
+        None
+      end
     end
 
     ##

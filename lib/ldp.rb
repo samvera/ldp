@@ -1,6 +1,7 @@
 require 'ldp/version'
 require 'linkeddata'
 require 'logger'
+require 'singleton'
 
 module Ldp
   RDF::Graph.send(:include, RDF::Isomorphic)
@@ -22,6 +23,13 @@ module Ldp
   class EtagMismatch < HttpError; end # 412
 
   class UnexpectedContentType < RuntimeError; end
+
+  # Returned when there is no result (e.g. 404)
+  class NoneClass
+    include Singleton
+  end
+  # The single global instance of NoneClass, representing the empty Option
+  None = NoneClass.instance # :doc:
 
   class << self
     def logger
