@@ -5,6 +5,8 @@ describe Ldp::Resource do
 
   let(:conn_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.head('/bad_request_resource') { [400] }  # HEAD requests do not have message bodies.
+      stub.get('/bad_request_resource') { [400, {}, "The namespace prefix (fooooooo) has not been registered"] }
       stub.head('/not_found_resource') { [404] }
       stub.get('/not_found_resource') { [404] }
       stub.head('/a_new_resource') { [404] }
@@ -29,6 +31,16 @@ describe Ldp::Resource do
       let(:path) { '/not_found_resource' }
       it "should raise an error" do
         expect{ subject.get }.to raise_error Ldp::NotFound
+      end
+    end
+    context "when the request is bad" do
+      let(:path) { '/bad_request_resource' }
+      it "should return a meaningful error message" do
+        # Ensures that failed head requests rerun as a GET request in order to get a meaningful error message
+        expect{ subject.head }.to raise_error Ldp::BadRequest, "The namespace prefix (fooooooo) has not been registered"
+      end
+      it "should raise an error with error message" do
+        expect{ subject.get }.to raise_error Ldp::BadRequest, "The namespace prefix (fooooooo) has not been registered"
       end
     end
 
