@@ -52,23 +52,37 @@ describe Ldp::Resource do
       end
     end
   end
-  
+
   describe "#new?" do
     context "with an object not in the repository" do
       let(:path) { '/not_found_resource' }
-      it "should be true" do  
+      it "should be true" do
         expect(subject).to be_new
       end
     end
-    
+
     context "with an object in the repository" do
       let(:path) { '/a_resource' }
-      it "should be false" do  
+      it "should be false" do
         expect(subject).to_not be_new
       end
     end
   end
-  
+
+  describe "#head" do
+    context "with an object not in the repository" do
+      let(:path) { '/not_found_resource' }
+      it "should be true" do
+        expect(subject.head).to eq Ldp::None
+      end
+
+      it "should cache requests" do
+        expect(subject.client).to receive(:head).and_raise(Ldp::NotFound).once
+        2.times { subject.head }
+      end
+    end
+  end
+
   describe "#create" do
     let(:path) { '/a_new_resource' }
     context "with a subject uri" do
