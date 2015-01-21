@@ -61,6 +61,12 @@ describe "Ldp::Client" do
       client = Ldp::Client.new "http://example.com"
       expect(client.http.host).to eq("example.com")
     end
+
+    it "should create a connection from Faraday constructor params including basic auth headers" do
+      client = Ldp::Client.new "http://example.com", "username", "password"
+      expect(client.http.host).to eq("example.com")
+      expect(client.http.headers).to include({"Authorization" => "Basic dXNlcm5hbWU6cGFzc3dvcmQ="})
+    end
   end
 
   describe "get" do
@@ -132,13 +138,13 @@ describe "Ldp::Client" do
 
     it "should set default Content-type" do
       subject.post "a_container", 'foo' do |req|
-        expect(req.headers).to eq({ "Content-Type" => "text/turtle" })
+        expect(req.headers).to include({ "Content-Type" => "text/turtle" })
       end
     end
 
     it "should set headers" do
       subject.post "a_container", 'foo', {'Content-Type' => 'application/pdf'} do |req|
-        expect(req.headers).to eq({ "Content-Type" => "application/pdf" })
+        expect(req.headers).to include({ "Content-Type" => "application/pdf" })
       end
     end
 
@@ -164,7 +170,7 @@ describe "Ldp::Client" do
 
     it "should set headers" do
       subject.put "a_resource", 'payload', {'Content-Type' => 'application/pdf'} do |req|
-        expect(req.headers).to eq({ "Content-Type" => "application/pdf" })
+        expect(req.headers).to include({ "Content-Type" => "application/pdf" })
       end
     end
 
