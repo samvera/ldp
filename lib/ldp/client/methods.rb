@@ -12,7 +12,7 @@ module Ldp::Client::Methods
       @username = http_client[1]
       @password = http_client[2]
       @http = Faraday.new http_client.first
-      http.basic_auth(user,passwd) 
+      http.basic_auth(user,passwd)
     else
       @http = Faraday.new *http_client
     end
@@ -55,7 +55,6 @@ module Ldp::Client::Methods
       end
 
       yield req if block_given?
-      Rails.logger.debug "req: #{req.inspect}"
     end
 
     if Ldp::Response.resource? resp
@@ -137,7 +136,7 @@ module Ldp::Client::Methods
           when 412
             Ldp::EtagMismatch.new(resp.body)
           else
-            Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}... #{resp.inspect}")
+            Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
           end
       end
     end
