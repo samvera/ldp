@@ -30,6 +30,7 @@ describe "Ldp::Client" do
       stub.delete("/a_resource") { [204] }
       stub.head('/a_container') { [200] }
       stub.post("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}] }
+      stub.patch("/a_container") { [201, {"Location" => "http://example.com/a_container/subresource"}] }
       stub.get("/test:1") { [200] }
       stub.get("http://test:8080/abc") { [200] }
       stub.put("/mismatch_resource") { [412] }
@@ -132,13 +133,13 @@ describe "Ldp::Client" do
 
     it "should set default Content-type" do
       subject.post "a_container", 'foo' do |req|
-        expect(req.headers).to eq({ "Content-Type" => "text/turtle" })
+        expect(req.headers).to include({ "Content-Type" => "text/turtle" })
       end
     end
 
     it "should set headers" do
       subject.post "a_container", 'foo', {'Content-Type' => 'application/pdf'} do |req|
-        expect(req.headers).to eq({ "Content-Type" => "application/pdf" })
+        expect(req.headers).to include({ "Content-Type" => "application/pdf" })
       end
     end
 
@@ -148,6 +149,13 @@ describe "Ldp::Client" do
 
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.post "a_container", &b }.to yield_control
+    end
+
+    it "should preserve basic auth headers" do
+      subject.http.basic_auth('Aladdin', 'open sesame')
+      subject.post "a_container", 'foo' do |req|
+        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
+      end
     end
 
   end
@@ -164,7 +172,7 @@ describe "Ldp::Client" do
 
     it "should set headers" do
       subject.put "a_resource", 'payload', {'Content-Type' => 'application/pdf'} do |req|
-        expect(req.headers).to eq({ "Content-Type" => "application/pdf" })
+        expect(req.headers).to include({ "Content-Type" => "application/pdf" })
       end
     end
 
@@ -181,8 +189,26 @@ describe "Ldp::Client" do
         expect { subject.put "mismatch_resource", "some-payload" }.to raise_error Ldp::EtagMismatch
       end
     end
+
+    it "should preserve basic auth headers" do
+      subject.http.basic_auth('Aladdin', 'open sesame')
+      subject.put "a_resource", "some-payload" do |req|
+        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
+      end
+    end
+
   end
 
+  describe 'patch' do
+
+    it "should preserve basic auth headers" do
+      subject.http.basic_auth('Aladdin', 'open sesame')
+      subject.patch "a_container", 'foo' do |req|
+        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
+      end
+    end
+
+  end
 
   describe "find_or_initialize" do
     it "should be a resource" do

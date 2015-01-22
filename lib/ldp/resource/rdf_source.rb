@@ -17,7 +17,7 @@ module Ldp
 
     def create
       super do |req|
-        req.headers = { "Content-Type" => "text/turtle" }
+        req.headers["Content-Type"] = "text/turtle"
       end
     end
 
