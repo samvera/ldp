@@ -8,9 +8,22 @@ module Ldp::Client::Methods
   def initialize_http_client *http_client
     if http_client.length == 1 and http_client.first.is_a? Faraday::Connection
       @http = http_client.first
+    elsif http_client.length == 3
+      @username = http_client[1]
+      @password = http_client[2]
+      @http = Faraday.new http_client.first
+      http.basic_auth(user,passwd)
     else
       @http = Faraday.new *http_client
     end
+  end
+
+  def user
+    @username
+  end
+
+  def passwd
+    @password
   end
 
   def head url
@@ -69,7 +82,8 @@ module Ldp::Client::Methods
     logger.debug "LDP: POST [#{url}]"
     resp = http.post do |req|
       req.url munge_to_relative_url(url)
-      req.headers = default_headers.merge headers
+      extraheaders = default_headers.merge headers
+      req.headers = req.headers.merge extraheaders
       req.body = body
       yield req if block_given?
     end
@@ -81,7 +95,8 @@ module Ldp::Client::Methods
     logger.debug "LDP: PUT [#{url}]"
     resp = http.put do |req|
       req.url munge_to_relative_url(url)
-      req.headers = default_headers.merge headers
+      extraheaders = default_headers.merge headers
+      req.headers = req.headers.merge extraheaders
       req.body = body
       yield req if block_given?
     end
@@ -93,7 +108,8 @@ module Ldp::Client::Methods
     logger.debug "LDP: PATCH [#{url}]"
     resp = http.patch do |req|
       req.url munge_to_relative_url(url)
-      req.headers = default_patch_headers.merge headers
+      extraheaders = default_patch_headers.merge headers
+      req.headers = req.headers.merge extraheaders
       req.body = body
       yield req if block_given?
     end
