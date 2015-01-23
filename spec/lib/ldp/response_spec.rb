@@ -4,7 +4,7 @@ describe Ldp::Response do
   LDP_RDF_RESOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\", <#{Ldp.direct_container.to_s}>;rel=\"type\""}
   LDP_NON_RDF_SOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\", <#{Ldp.non_rdf_source.to_s}>;rel=\"type\""}
 
-  let(:mock_response) { double(headers: {}, env: { url: "info:a" }) }
+  let(:mock_response) { double("mock response", headers: {}, env: { url: "info:a" }) }
   let(:mock_client) { double(Ldp::Client) }
 
   subject do
@@ -18,6 +18,34 @@ describe Ldp::Response do
     end
   end
 
+  describe "#dup" do
+    let(:simple_container_graph) { "<> a <http://www.w3.org/ns/ldp#Container> ." }
+    let(:link) { ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""] }
+
+    let(:conn_stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.get('/a_container') { [200, {"Link" => link}, simple_container_graph] }
+      end
+    end
+
+    let(:mock_conn) { Faraday.new { |builder| builder.adapter :test, conn_stubs } }
+    let(:client) { Ldp::Client.new mock_conn }
+    let(:raw_response) { client.get "a_container" }
+
+    let(:response) { Ldp::Response.wrap mock_client, raw_response }
+    subject { response.dup }
+    it { is_expected.to respond_to :links }
+
+    it "should not have duplicated the graph" do
+      expect(response.graph.object_id).not_to eq subject.graph.object_id
+    end
+
+    it "should have duplicated the body" do
+      expect(response.body.object_id).to eq subject.body.object_id
+    end
+  end
+
+
   describe ".links" do
     it "should extract link headers with relations as a hash" do
       allow(mock_response).to receive(:headers).and_return(
@@ -26,7 +54,7 @@ describe Ldp::Response do
             "<abc>;rel=\"some-multi-rel\"",
             "<123>;rel=\"some-multi-rel\"",
             "<vanilla-link>"
-          ] 
+          ]
         )
       h = Ldp::Response.links mock_response
 

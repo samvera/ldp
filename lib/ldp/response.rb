@@ -60,6 +60,17 @@ module Ldp
       container?(response) || Array(links(response)["type"]).include?(Ldp.rdf_source)
     end
 
+    def dup
+      super.tap do |new_resp|
+        new_resp.send(:extend, Ldp::Response)
+        if ::RUBY_VERSION < '2.0'
+          new_resp.send(:remove_instance_variable, :@graph)
+        else
+          new_resp.remove_instance_variable(:@graph)
+        end
+      end
+    end
+
     ##
     # Link: headers from the HTTP response
     def links
@@ -109,7 +120,7 @@ module Ldp
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
-        raise UnexpectedContentType, "The resource #{page_subject} is not an RDFSource" unless rdf_source?
+        raise UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
         graph = RDF::Graph.new
 
         if resource?
