@@ -19,29 +19,44 @@ describe Ldp::Response do
   end
 
   describe "#dup" do
-    let(:simple_container_graph) { "<> a <http://www.w3.org/ns/ldp#Container> ." }
-    let(:link) { ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""] }
-
-    let(:conn_stubs) do
-      Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.get('/a_container') { [200, {"Link" => link}, simple_container_graph] }
-      end
-    end
-
     let(:mock_conn) { Faraday.new { |builder| builder.adapter :test, conn_stubs } }
     let(:client) { Ldp::Client.new mock_conn }
     let(:raw_response) { client.get "a_container" }
-
+    let(:conn_stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.get('/a_container') { [200, {"Link" => link}, body] }
+      end
+    end
     let(:response) { Ldp::Response.wrap mock_client, raw_response }
-    subject { response.dup }
-    it { is_expected.to respond_to :links }
 
-    it "should not have duplicated the graph" do
-      expect(response.graph.object_id).not_to eq subject.graph.object_id
+    subject { response.dup }
+
+    context "for a container resource" do
+      let(:body) { "<> a <http://www.w3.org/ns/ldp#Container> ." }
+      let(:link) { ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""] }
+      it { is_expected.to respond_to :links }
+
+      it "should not have duplicated the graph" do
+        expect(response.graph.object_id).not_to eq subject.graph.object_id
+      end
+
+      it "should have duplicated the body" do
+        expect(response.body.object_id).to eq subject.body.object_id
+      end
     end
 
-    it "should have duplicated the body" do
-      expect(response.body.object_id).to eq subject.body.object_id
+    context "for a non-rdf resource" do
+      let(:body) { "This is only a test" }
+      let(:link) { ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"","<http://www.w3.org/ns/ldp#NonRDFSource>;rel=\"type\""] }
+      it { is_expected.to respond_to :links }
+
+      it "should not have a graph" do
+        expect(response.instance_variable_get(:@graph)).to be_nil
+      end
+
+      it "should have duplicated the body" do
+        expect(response.body.object_id).to eq subject.body.object_id
+      end
     end
   end
 
