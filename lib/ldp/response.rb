@@ -2,6 +2,7 @@ module Ldp
   module Response
     require 'ldp/response/paging'
 
+    TYPE = 'type'.freeze
     ##
     # Wrap the raw Faraday respone with our LDP extensions
     def self.wrap client, raw_resp
@@ -14,7 +15,7 @@ module Ldp
     # Extract the Link: headers from the HTTP resource
     def self.links response
       h = {}
-      Array(response.headers["Link"]).map { |x| x.split(", ") }.flatten.inject(h) do |memo, header|
+      Array(response.headers['Link'.freeze]).map { |x| x.split(', '.freeze) }.flatten.inject(h) do |memo, header|
         m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
         if m
           memo[m[:rel]] ||= []
@@ -24,10 +25,10 @@ module Ldp
         memo
       end
     end
-    
+
     def self.applied_preferences headers
       h = {}
-      
+
       Array(headers).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
         m = header.match(/(?<key>[^=;]*)(=(?<value>[^;,]*))?(;\s*(?<params>[^,]*))?/)
         includes = (m[:params].match(/include="(?<include>[^"]+)"/)[:include] || "").split(" ")
@@ -40,7 +41,7 @@ module Ldp
     # Is the response an LDP resource?
 
     def self.resource? response
-      Array(links(response)["type"]).include? Ldp.resource.to_s
+      Array(links(response)[TYPE]).include? Ldp.resource.to_s
     end
 
     ##
@@ -50,14 +51,14 @@ module Ldp
         Ldp.basic_container,
         Ldp.direct_container,
         Ldp.indirect_container
-      ].any? { |x| Array(links(response)["type"]).include? x.to_s }
+      ].any? { |x| Array(links(response)[TYPE]).include? x.to_s }
     end
 
     ##
     # Is the response an LDP RDFSource?
     #   ldp:Container is a subclass of ldp:RDFSource
     def self.rdf_source? response
-      container?(response) || Array(links(response)["type"]).include?(Ldp.rdf_source)
+      container?(response) || Array(links(response)[TYPE]).include?(Ldp.rdf_source)
     end
 
     def dup
@@ -96,7 +97,7 @@ module Ldp
     end
 
     def preferences
-      Ldp::Resource.applied_preferences(headers["Preference-Applied"])
+      Ldp::Resource.applied_preferences(headers['Preference-Applied'.freeze])
     end
     ##
     # Get the subject for the response
@@ -138,7 +139,7 @@ module Ldp
     ##
     # Extract the ETag for the resource
     def etag
-      @etag ||= headers['ETag']
+      @etag ||= headers['ETag'.freeze]
     end
 
     def etag=(val)
@@ -148,7 +149,7 @@ module Ldp
     ##
     # Extract the last modified header for the resource
     def last_modified
-      @last_modified ||= headers['Last-Modified']
+      @last_modified ||= headers['Last-Modified'.freeze]
     end
 
     def last_modified=(val)
@@ -158,17 +159,19 @@ module Ldp
     ##
     # Extract the Link: rel="type" headers for the resource
     def types
-      Array(links["type"])
+      Array(links[TYPE])
     end
-    
+
+    RETURN = 'return'.freeze
+
     def includes? preference
       key = Ldp.send("prefer_#{preference}") if Ldp.respond_to("prefer_#{preference}")
       key ||= preference
-      preferences["return"][:includes].include?(key) || !preferences["return"][:omits].include?(key) 
+      preferences[RETURN][:includes].include?(key) || !preferences["return"][:omits].include?(key)
     end
-    
+
     def minimal?
-      preferences["return"][:value] == "minimal"
+      preferences[RETURN][:value] == "minimal"
     end
   end
 end
