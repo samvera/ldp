@@ -69,7 +69,7 @@ module Ldp::Client::Methods
     logger.debug "LDP: POST [#{url}]"
     resp = http.post do |req|
       req.url munge_to_relative_url(url)
-      req.headers = default_headers.merge headers
+      req.headers.merge!(default_headers).merge!(headers)
       req.body = body
       yield req if block_given?
     end
@@ -81,7 +81,7 @@ module Ldp::Client::Methods
     logger.debug "LDP: PUT [#{url}]"
     resp = http.put do |req|
       req.url munge_to_relative_url(url)
-      req.headers = default_headers.merge headers
+      req.headers.merge!(default_headers).merge!(headers)
       req.body = body
       yield req if block_given?
     end
@@ -93,7 +93,7 @@ module Ldp::Client::Methods
     logger.debug "LDP: PATCH [#{url}]"
     resp = http.patch do |req|
       req.url munge_to_relative_url(url)
-      req.headers = default_patch_headers.merge headers
+      req.headers.merge!(default_patch_headers).merge!(headers)
       req.body = body
       yield req if block_given?
     end
