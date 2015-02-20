@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Linked Data Platform client library}
   spec.summary       = spec.description
   spec.homepage      = "https://github.com/cbeer/ldp"
-  spec.license       = "MIT"
+  spec.license       = "APACHE2"
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
