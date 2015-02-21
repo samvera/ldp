@@ -49,3 +49,9 @@ Due to some discrepancies with alpha version of Fedora Commons, you may need to 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+# Project Hydra
+This software has been developed by and is brought to you by the Hydra community.  Learn more at the
+[Project Hydra website](http://projecthydra.org)
+
+![Project Hydra Logo](https://github.com/uvalib/libra-oa/blob/a6564a9e5c13b7873dc883367f5e307bf715d6cf/public/images/powered_by_hydra.png?raw=true)
