@@ -1,6 +1,6 @@
 # Ldp.rb
 
-[![Build Status](https://travis-ci.org/cbeer/ldp.png?branch=master)](https://travis-ci.org/cbeer/ldp)
+[![Build Status](https://travis-ci.org/projecthydra/ldp.png?branch=master)](https://travis-ci.org/projecthydra/ldp)
 
 Linked Data Platform client library for Ruby
 
@@ -39,8 +39,8 @@ orm.save
 
 ### Fedora Commons notes
 Due to some discrepancies with alpha version of Fedora Commons, you may need to do some things differently:
-* [Can't load resources from Fedora 4](https://github.com/cbeer/ldp/issues/1)
-* [orm.save with an rdf:type doesn't work with Fedora 4.0.0-alpha-3](https://github.com/cbeer/ldp/issues/2)
+* [Can't load resources from Fedora 4](https://github.com/projecthydra/ldp/issues/1)
+* [orm.save with an rdf:type doesn't work with Fedora 4.0.0-alpha-3](https://github.com/projecthydra/ldp/issues/2)
 
 ## Contributing
 
