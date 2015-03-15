@@ -1,3 +1,5 @@
+require 'rdf/turtle'
+require 'rdf/rdfxml'
 module Ldp
   class Resource::RdfSource < Ldp::Resource
 
@@ -26,7 +28,7 @@ module Ldp
     end
 
     def graph
-      @graph ||= new? ? build_empty_graph : build_graph(get.graph)
+      @graph ||= new? ? build_empty_graph : build_graph(response_as_graph(get))
     end
 
     def build_empty_graph
@@ -44,12 +46,26 @@ module Ldp
 
 
     private
-
+      ##
+      # @param [Faraday::Response] graph query response
+      # @return [RDF::Graph]
+      def response_as_graph(resp)
+        content_type = resp.headers['Content-Type'] || 'text/turtle'
+        content_type = Array(content_type).first
+        format = Array(RDF::Format.content_types[content_type]).first
+        source = resp.body
+        reader = RDF::Reader.for(content_type:content_type).new(source, base_uri:subject)
+        graph = build_empty_graph
+        reader.each_statement do |stmt|
+          graph << stmt
+        end
+        graph
+      end
       ##
       # @param [RDF::Graph] original_graph The graph returned by the LDP server
       # @return [RDF::Graph] A graph striped of any inlined resources present in the original
       def build_graph(original_graph)
-        inlined_resources = get.graph.query(predicate: Ldp.contains).map { |x| x.object }
+        inlined_resources = response_as_graph(get).query(predicate: Ldp.contains).map { |x| x.object }
 
         # we want to scope this graph to just statements about this model, not contained relations
         if inlined_resources.empty?
