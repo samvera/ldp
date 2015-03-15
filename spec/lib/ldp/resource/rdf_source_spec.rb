@@ -1,3 +1,4 @@
+require 'stringio'
 require 'spec_helper'
 
 describe Ldp::Resource::RdfSource do
@@ -5,10 +6,18 @@ describe Ldp::Resource::RdfSource do
     RDF::Graph.new << [RDF::URI.new(), RDF::DC.title, "Hello, world!"]
   end
 
+  let(:simple_graph_source) do
+    io = StringIO.new
+    RDF::Writer.for(content_type:'text/turtle').dump(simple_graph,io)
+    io.string
+  end
   let(:conn_stubs) do
     Faraday::Adapter::Test::Stubs.new do |stub|
       stub.post("/") { [201]}
       stub.put("/abs_url_object") { [201]}
+      stub.head("/abs_url_object") {[404]}
+      stub.head("/existing_object") {[200, {'Content-Type'=>'text/turtle'}]}
+      stub.get("/existing_object") {[200, {'Content-Type'=>'text/turtle'}, simple_graph_source]}
     end
   end
 
@@ -34,7 +43,6 @@ describe Ldp::Resource::RdfSource do
 
     it "should allow absolute URLs to the LDP server" do
       obj = Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/abs_url_object"
-      allow(obj).to receive(:new?).and_return(true)
       created_resource = obj.create
       expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
     end
@@ -45,6 +53,21 @@ describe Ldp::Resource::RdfSource do
       it "should raise an error" do
         expect{ Ldp::Resource::RdfSource.new mock_client, nil, "derp" }.to raise_error(ArgumentError,
           "Third argument to Ldp::Resource::RdfSource.new should be a RDF::Graph or a Ldp::Response. You provided String")
+      end
+    end
+  end
+
+  describe '#graph' do
+    context 'for a new object' do
+      subject { Ldp::Resource::RdfSource.new mock_client, nil }
+      it do
+        expect(subject.graph.size).to eql(0)
+      end
+    end
+    context 'for an existing object' do
+      subject { Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/existing_object" }
+      it do 
+        expect(subject.graph.size).to eql(1)
       end
     end
   end
