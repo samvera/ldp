@@ -29,17 +29,18 @@ module Ldp::Client::Methods
     logger.debug "LDP: GET [#{url}]"
     resp = http.get do |req|
       req.url munge_to_relative_url(url)
+      prefer_headers = ::Ldp::PreferHeaders.new
 
       if options[:minimal]
-        req.headers["Prefer"] = "return=minimal"
+        prefer_headers.return = "minimal"
       else
+        prefer_headers.return = "representation"
         includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
         omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
-        req.headers["Prefer"] = ["return=representation",
-          ("include=\"#{includes.join(" ")}\"" unless includes.empty?),
-          ("omit=\"#{omits.join(" ")}\"" unless omits.empty?)
-        ].compact.join("; ")
+        prefer_headers.include = includes
+        prefer_headers.omit = omits
       end
+      req.headers["Prefer"] = prefer_headers.to_s
 
       yield req if block_given?
     end

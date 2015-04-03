@@ -4,6 +4,7 @@ module Ldp
   class Client
 
     require 'ldp/client/methods'
+    require 'ldp/client/prefer_headers'
     include Ldp::Client::Methods
 
     def initialize *http_client
