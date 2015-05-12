@@ -52,7 +52,7 @@ describe Ldp::Resource::RdfSource do
     context "with bad attributes" do
       it "should raise an error" do
         expect{ Ldp::Resource::RdfSource.new mock_client, nil, "derp" }.to raise_error(ArgumentError,
-          "Third argument to Ldp::Resource::RdfSource.new should be a RDF::Graph or a Ldp::Response. You provided String")
+          "Third argument to Ldp::Resource::RdfSource.new should be a RDF::Enumerable or a Ldp::Response. You provided String")
       end
     end
   end

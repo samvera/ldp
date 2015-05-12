@@ -66,7 +66,7 @@ module Ldp
     def save!
       result = save
 
-      if result.is_a? RDF::Graph
+      if result.is_a? RDF::Enumerable
         raise GraphDifferenceException.new "", result
       elsif !result
         raise @last_response
