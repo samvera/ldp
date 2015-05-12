@@ -27,7 +27,7 @@ module Ldp
 
       when (args.length == 2)
         slug, graph_or_content = args
-      when (args.first.is_a? RDF::Graph)
+      when (args.first.is_a? RDF::Enumerable)
         slug = nil
         graph_or_content = args.first
       else
@@ -35,7 +35,7 @@ module Ldp
         graph_or_content = RDF::Graph.new
       end
 
-      resp = client.post subject, (graph_or_content.is_a?(RDF::Graph) ? graph_or_content.dump(:ttl) : graph_or_content) do |req|
+      resp = client.post subject, (graph_or_content.is_a?(RDF::Enumerable) ? graph_or_content.dump(:ttl) : graph_or_content) do |req|
         req.headers['Slug'] = slug
       end
 

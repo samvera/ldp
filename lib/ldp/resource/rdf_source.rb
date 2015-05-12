@@ -7,13 +7,13 @@ module Ldp
       super
 
       case graph_or_response
-        when RDF::Graph
+        when RDF::Enumerable
           @graph = graph_or_response
         when Ldp::Response
         when NilClass
           #nop
         else
-          raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Graph or a Ldp::Response. You provided #{graph_or_response.class}"
+          raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}"
       end
     end
 
