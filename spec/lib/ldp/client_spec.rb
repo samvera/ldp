@@ -72,6 +72,15 @@ describe "Ldp::Client" do
       expect(resp.resource?).to be true
     end
 
+    it "is instrumented" do
+      vals = []
+      ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
+        vals << payload[:name]
+      end
+      subject.get "a_resource"
+      expect(vals).to eq ['GET']
+    end
+
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.get "a_resource", &b }.to yield_control
     end
@@ -113,6 +122,15 @@ describe "Ldp::Client" do
       expect(resp.status).to eq(204)
     end
 
+    it "is instrumented" do
+      vals = []
+      ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
+        vals << payload[:name]
+      end
+      subject.delete "a_resource"
+      expect(vals).to eq ['DELETE']
+    end
+
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.delete "a_resource", &b }.to yield_control
     end
@@ -123,6 +141,15 @@ describe "Ldp::Client" do
       resp = subject.post "a_container"
       expect(resp.status).to eq(201)
       expect(resp.headers[:Location]).to eq("http://example.com/a_container/subresource")
+    end
+
+    it "is instrumented" do
+      vals = []
+      ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
+        vals << payload[:name]
+      end
+      subject.post "a_container"
+      expect(vals).to eq ['POST']
     end
 
     it "should set content" do
@@ -164,6 +191,15 @@ describe "Ldp::Client" do
     it "should PUT content to the subject at the HTTP endpoint" do
       resp = subject.put "a_resource", "some-payload"
       expect(resp.status).to eq(204)
+    end
+
+    it "is instrumented" do
+      vals = []
+      ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
+        vals << payload[:name]
+      end
+      subject.put "a_resource", "some-payload"
+      expect(vals).to eq ['PUT']
     end
 
     it "should accept a block to change the HTTP request" do

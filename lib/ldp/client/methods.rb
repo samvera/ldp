@@ -14,92 +14,105 @@ module Ldp::Client::Methods
   end
 
   def head url
-    logger.debug "LDP: HEAD [#{url}]"
-    resp = http.head do |req|
-      req.url munge_to_relative_url(url)
+    ActiveSupport::Notifications.instrument("http.ldp",
+                 url: url, name: "HEAD", ldp_client: object_id) do
+      resp = http.head do |req|
+        req.url munge_to_relative_url(url)
 
-      yield req if block_given?
+        yield req if block_given?
+      end
+
+      check_for_errors(resp)
     end
-
-    check_for_errors(resp)
   end
 
   # Get a LDP Resource by URI
   def get url, options = {}
-    logger.debug "LDP: GET [#{url}]"
-    resp = http.get do |req|
-      req.url munge_to_relative_url(url)
-      prefer_headers = ::Ldp::PreferHeaders.new
+    ActiveSupport::Notifications.instrument("http.ldp",
+                 url: url, name: "GET", ldp_client: object_id) do
+      resp = http.get do |req|
+        req.url munge_to_relative_url(url)
+        prefer_headers = ::Ldp::PreferHeaders.new
 
-      if options[:minimal]
-        prefer_headers.return = "minimal"
-      else
-        prefer_headers.return = "representation"
-        includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
-        omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
-        prefer_headers.include = includes
-        prefer_headers.omit = omits
+        if options[:minimal]
+          prefer_headers.return = "minimal"
+        else
+          prefer_headers.return = "representation"
+          includes = Array(options[:include]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
+          omits = Array(options[:omit]).map { |x| Ldp.send("prefer_#{x}") if Ldp.respond_to? "prefer_#{x}" }
+          prefer_headers.include = includes
+          prefer_headers.omit = omits
+        end
+        req.headers["Prefer"] = prefer_headers.to_s
+
+        yield req if block_given?
       end
-      req.headers["Prefer"] = prefer_headers.to_s
 
-      yield req if block_given?
+      if Ldp::Response.resource? resp
+        Ldp::Response.wrap self, resp
+      else
+        resp
+      end
+
+      check_for_errors(resp)
     end
-
-    if Ldp::Response.resource? resp
-      Ldp::Response.wrap self, resp
-    else
-      resp
-    end
-
-    check_for_errors(resp)
   end
 
   # Delete a LDP Resource by URI
   def delete url
-    logger.debug "LDP: DELETE [#{url}]"
-    resp = http.delete do |req|
-      req.url munge_to_relative_url(url)
-      yield req if block_given?
-    end
+    ActiveSupport::Notifications.instrument("http.ldp",
+                 url: url, name: "DELETE", ldp_client: object_id) do
+      resp = http.delete do |req|
+        req.url munge_to_relative_url(url)
+        yield req if block_given?
+      end
 
-    check_for_errors(resp)
+      check_for_errors(resp)
+    end
   end
 
   # Post TTL to an LDP Resource
   def post url, body = nil, headers = {}
-    logger.debug "LDP: POST [#{url}]"
-    resp = http.post do |req|
-      req.url munge_to_relative_url(url)
-      req.headers.merge!(default_headers).merge!(headers)
-      req.body = body
-      yield req if block_given?
+    ActiveSupport::Notifications.instrument("http.ldp",
+                 url: url, name: "POST", ldp_client: object_id) do
+      resp = http.post do |req|
+        req.url munge_to_relative_url(url)
+        req.headers.merge!(default_headers).merge!(headers)
+        req.body = body
+        yield req if block_given?
+      end
+      check_for_errors(resp)
     end
-    check_for_errors(resp)
   end
 
   # Update an LDP resource with TTL by URI
   def put url, body, headers = {}
-    logger.debug "LDP: PUT [#{url}]"
-    resp = http.put do |req|
-      req.url munge_to_relative_url(url)
-      req.headers.merge!(default_headers).merge!(headers)
-      req.body = body
-      yield req if block_given?
+    ActiveSupport::Notifications.instrument("http.ldp",
+                 url: url, name: "PUT", ldp_client: object_id) do
+      resp = http.put do |req|
+        req.url munge_to_relative_url(url)
+        req.headers.merge!(default_headers).merge!(headers)
+        req.body = body
+        yield req if block_given?
+      end
+      check_for_errors(resp)
     end
-    check_for_errors(resp)
   end
 
   # Update an LDP resource with TTL by URI
   def patch url, body, headers = {}
-    logger.debug "LDP: PATCH [#{url}]"
-    resp = http.patch do |req|
-      req.url munge_to_relative_url(url)
-      req.headers.merge!(default_patch_headers).merge!(headers)
-      req.body = body
-      yield req if block_given?
+    ActiveSupport::Notifications.instrument("http.ldp",
+                 url: url, name: "PATCH", ldp_client: object_id) do
+      resp = http.patch do |req|
+        req.url munge_to_relative_url(url)
+        req.headers.merge!(default_patch_headers).merge!(headers)
+        req.body = body
+        yield req if block_given?
+      end
+      check_for_errors(resp)
     end
-    check_for_errors(resp)
   end
+
   private
 
   def check_for_errors resp
