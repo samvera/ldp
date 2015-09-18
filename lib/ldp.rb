@@ -20,6 +20,7 @@ module Ldp
   class HttpError < RuntimeError; end
   class BadRequest < HttpError; end # 400
   class NotFound < HttpError; end # 404
+  class Conflict < HttpError; end # 409
   class Gone < HttpError; end # 410
   class EtagMismatch < HttpError; end # 412
 
