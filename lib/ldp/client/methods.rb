@@ -129,6 +129,8 @@ module Ldp::Client::Methods
             end
           when 404
             Ldp::NotFound.new(resp.body)
+          when 409
+            Ldp::Conflict.new(resp.body)
           when 410
             Ldp::Gone.new(resp.body)
           when 412
