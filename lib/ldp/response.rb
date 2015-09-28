@@ -127,7 +127,7 @@ module Ldp
         graph = RDF::Graph.new
 
         if resource?
-          RDF::Reader.for(:ttl).new(StringIO.new(body), :base_uri => page_subject) do |reader|
+          RDF::Reader.for(:ttl).new(response_body, base_uri: page_subject) do |reader|
             reader.each_statement do |s|
               graph << s
             end
@@ -175,5 +175,15 @@ module Ldp
     def minimal?
       preferences[RETURN][:value] == "minimal"
     end
+
+    private
+
+      # Get the body and ensure it's UTF-8 encoded. Since Fedora 9.3 isn't
+      # returning a charset, then Net::HTTP is just returning ASCII-8BIT
+      # See https://github.com/ruby-rdf/rdf-turtle/issues/13
+      # See https://jira.duraspace.org/browse/FCREPO-1750
+      def response_body
+        body.force_encoding('utf-8')
+      end
   end
 end
