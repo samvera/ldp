@@ -20,7 +20,6 @@ module Ldp
     def create
       super do |req|
         req.headers["Content-Type"] = "text/turtle"
-        req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
       end
     end
 

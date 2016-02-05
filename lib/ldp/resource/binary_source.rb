@@ -26,5 +26,11 @@ module Ldp
       fields = [:subject].map{|field| "#{field}=\"#{self.send(field)}\""}
       string << fields.join(", ") << ">"
     end
+
+    protected
+
+    def interaction_model
+      Ldp.non_rdf_source
+    end
   end
 end

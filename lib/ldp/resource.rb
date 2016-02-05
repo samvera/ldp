@@ -70,7 +70,7 @@ module Ldp
       raise "Can't call create on an existing resource" unless new?
       verb = subject.nil? ? :post : :put
       resp = client.send(verb, (subject || @base_path), content) do |req|
-
+        req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
         yield req if block_given?
       end
 
@@ -110,6 +110,12 @@ module Ldp
       end
       @get.etag = response.etag
       @get.last_modified = response.last_modified
+    end
+
+    protected
+
+    def interaction_model
+      nil
     end
 
   end
