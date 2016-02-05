@@ -6,3 +6,5 @@ gemspec
 gem 'slop', '~> 3.6' if RUBY_PLATFORM == "java"
 gem 'byebug'
 gem 'activesupport'
+gem 'capybara_discoball'
+gem 'derby'
