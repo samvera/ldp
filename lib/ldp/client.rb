@@ -20,7 +20,7 @@ module Ldp
         Resource::BinarySource.new self, subject, data
       when data.container?
         Ldp::Container.new_from_response self, subject, data
-      when data.resource?
+      when data.rdf_source?
         Resource::RdfSource.new self, subject, data
       else
         Resource::BinarySource.new self, subject, data
