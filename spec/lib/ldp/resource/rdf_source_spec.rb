@@ -45,6 +45,7 @@ describe Ldp::Resource::RdfSource do
       obj = Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/abs_url_object"
       created_resource = obj.create
       expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
+      expect(created_resource.subject).to eq "http://my.ldp.server/abs_url_object"
     end
   end
 

@@ -74,8 +74,11 @@ module Ldp
         yield req if block_given?
       end
 
-      @subject = resp.headers['Location']
-      @subject_uri = nil
+      if verb == :post
+        @subject = resp.headers['Location']
+        @subject_uri = nil
+      end
+
       reload
     end
 
