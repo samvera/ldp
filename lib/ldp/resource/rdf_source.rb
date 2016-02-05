@@ -20,6 +20,7 @@ module Ldp
     def create
       super do |req|
         req.headers["Content-Type"] = "text/turtle"
+        req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
       end
     end
 
@@ -43,7 +44,11 @@ module Ldp
       RDF::Graph
     end
 
+    protected
 
+    def interaction_model
+      Ldp.resource
+    end
 
     private
       ##

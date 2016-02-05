@@ -46,6 +46,30 @@ describe Ldp::Resource::RdfSource do
       created_resource = obj.create
       expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
     end
+
+    describe 'basic containers' do
+      it 'sends the requested interaction model' do
+        obj = Ldp::Container::Basic.new mock_client, "http://my.ldp.server/abs_url_object"
+        created_resource = obj.create
+        expect(created_resource).to be_kind_of Ldp::Container::Basic
+      end
+    end
+
+    describe 'direct containers' do
+      it 'sends the requested interaction model' do
+        obj = Ldp::Container::Direct.new mock_client, "http://my.ldp.server/abs_url_object"
+        created_resource = obj.create
+        expect(created_resource).to be_kind_of Ldp::Container::Direct
+      end
+    end
+
+    describe 'indirect containers' do
+      it 'sends the requested interaction model' do
+        obj = Ldp::Container::Indirect.new mock_client, "http://my.ldp.server/abs_url_object"
+        created_resource = obj.create
+        expect(created_resource).to be_kind_of Ldp::Container::Indirect
+      end
+    end
   end
 
   describe "#initialize" do

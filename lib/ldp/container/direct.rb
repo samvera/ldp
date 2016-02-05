@@ -11,6 +11,11 @@ module Ldp
     def member_relation
       graph.first_object(predicate: Ldp.hasMemberRelation) || Ldp.member
     end
-    
+
+    protected
+
+    def interaction_model
+      Ldp.direct_container
+    end
   end
 end

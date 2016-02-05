@@ -10,8 +10,15 @@ module Ldp
         [x.object, Ldp::Resource::RdfSource.new(client, x.object, contained_graph(x.object))]
       end]
     end
+
+    protected
+
+    def interaction_model
+      Ldp.basic_container
+    end
     
     private
+
     def contained_graph subject
       g = RDF::Graph.new
       get.graph.query(subject: subject) do |stmt|

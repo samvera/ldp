@@ -7,5 +7,11 @@ module Ldp
         yield contains[x.object] || Ldp::Resource::RdfSource.new(client, x.object)
       end
     end
+
+    protected
+
+    def interaction_model
+      Ldp.indirect_container
+    end
   end
 end
