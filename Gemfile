@@ -4,7 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'slop', '~> 3.6' if RUBY_PLATFORM == "java"
-gem 'byebug'
+gem 'byebug', platforms: [:mri]
 gem 'activesupport'
 gem 'capybara_discoball'
 gem 'derby'
