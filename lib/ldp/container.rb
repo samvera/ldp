@@ -56,7 +56,7 @@ module Ldp
 
     def contained_graph subject
       g = RDF::Graph.new
-      graph.query(subject: subject) do |stmt|
+      response_graph.query(subject: subject) do |stmt|
         g << stmt
       end
       g
