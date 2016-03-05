@@ -6,6 +6,19 @@ module Ldp
     attr_reader :client, :subject
     attr_accessor :content
 
+    def self.for(client, subject, response = nil)
+      case
+      when !response.is_a?(Ldp::Response)
+        Resource::BinarySource.new client, subject, data
+      when response.container?
+        Ldp::Container.for client, subject, data
+      when response.rdf_source?
+        Resource::RdfSource.new client, subject, data
+      else
+        Resource::BinarySource.new client, subject, data
+      end
+    end
+
     def initialize client, subject, response = nil, base_path = ''
       @client = client
       @subject = subject
