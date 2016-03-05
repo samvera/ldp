@@ -48,11 +48,7 @@ module Ldp::Client::Methods
         yield req if block_given?
       end
 
-      if Ldp::Response.resource? resp
-        Ldp::Response.wrap self, resp
-      else
-        resp
-      end
+      Ldp::Response.wrap self, resp
 
       check_for_errors(resp)
     end

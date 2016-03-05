@@ -6,6 +6,17 @@ module Ldp
     attr_reader :client, :subject
     attr_accessor :content
 
+    def self.for(client, subject, response = nil)
+      case
+      when response.container?
+        Ldp::Container.for client, subject, response
+      when response.rdf_source?
+        Resource::RdfSource.new client, subject, response
+      else
+        Resource::BinarySource.new client, subject, response
+      end
+    end
+
     def initialize client, subject, response = nil, base_path = ''
       @client = client
       @subject = subject
@@ -67,7 +78,7 @@ module Ldp
     # Create a new resource at the URI
     # @return [RdfSource] the new representation
     def create &block
-      raise "Can't call create on an existing resource" unless new?
+      raise Ldp::Error, "Can't call create on an existing resource" unless new?
       verb = subject.nil? ? :post : :put
       resp = client.send(verb, (subject || @base_path), content) do |req|
         req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
@@ -103,8 +114,9 @@ module Ldp
         new_response.headers['Last-Modified'] == response.headers['Last-Modified']
     end
 
-    def update_cached_get response
-      Response.wrap(client, response)
+    def update_cached_get(response)
+      response = Response.wrap(client, response)
+
       if response.etag.nil? || response.last_modified.nil?
         response = Response.wrap(client, client.head(subject))
       end

@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 describe Ldp::Response do
-  LDP_RDF_RESOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\", <#{Ldp.direct_container.to_s}>;rel=\"type\""}
-  LDP_NON_RDF_SOURCE_HEADERS = { "Link" => "<#{Ldp.resource.to_s}>;rel=\"type\", <#{Ldp.non_rdf_source.to_s}>;rel=\"type\""}
+  LDP_RDF_RESOURCE_HEADERS = { "Link" => "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\", <#{RDF::Vocab::LDP.DirectContainer}>;rel=\"type\""}
+  LDP_NON_RDF_SOURCE_HEADERS = { "Link" => "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\", <#{RDF::Vocab::LDP.NonRDFSource}>;rel=\"type\""}
 
   let(:mock_response) { double("mock response", headers: {}, env: { url: "info:a" }) }
   let(:mock_client) { double(Ldp::Client) }
@@ -91,7 +91,7 @@ describe Ldp::Response do
     it "should be a resource if a Link[rel=type] header asserts it is an ldp:resource" do
       allow(mock_response).to receive(:headers).and_return(
         "Link" => [
-            "<#{Ldp.resource}>;rel=\"type\""
+            "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\""
           ]
         )
       expect(Ldp::Response.resource? mock_response).to be true
@@ -142,7 +142,7 @@ describe Ldp::Response do
 
       it "should see if the response has an ldp:Page statement" do
         graph = RDF::Graph.new
-        graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
+        graph << [RDF::URI.new('info:a'), RDF.type, RDF::Vocab::LDP.Page]
         allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
         expect(subject).to have_page
       end
@@ -169,8 +169,8 @@ describe Ldp::Response do
     it "should get the ldp:Page data from the query" do
       graph = RDF::Graph.new
 
-      graph << [RDF::URI.new('info:a'), RDF.type, Ldp.page]
-      graph << [RDF::URI.new('info:b'), RDF.type, Ldp.page]
+      graph << [RDF::URI.new('info:a'), RDF.type, RDF::Vocab::LDP.Page]
+      graph << [RDF::URI.new('info:b'), RDF.type, RDF::Vocab::LDP.Page]
 
       allow(mock_response).to receive(:body).and_return(graph.dump(:ttl))
       allow(mock_response).to receive(:headers).and_return(LDP_RDF_RESOURCE_HEADERS)

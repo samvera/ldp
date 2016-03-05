@@ -9,13 +9,13 @@ module Ldp
     end
     
     def member_relation
-      graph.first_object(predicate: Ldp.hasMemberRelation) || Ldp.member
+      graph.first_object(predicate: RDF::Vocab::LDP.hasMemberRelation) || RDF::Vocab::LDP.member
     end
 
     protected
 
     def interaction_model
-      Ldp.direct_container
+      RDF::Vocab::LDP.DirectContainer
     end
   end
 end

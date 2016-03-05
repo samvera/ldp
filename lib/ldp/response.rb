@@ -41,16 +41,16 @@ module Ldp
     # Is the response an LDP resource?
 
     def self.resource? response
-      Array(links(response)[TYPE]).include? Ldp.resource.to_s
+      Array(links(response)[TYPE]).include? RDF::Vocab::LDP.Resource.to_s
     end
 
     ##
     # Is the response an LDP container?
     def self.container? response
       [
-        Ldp.basic_container,
-        Ldp.direct_container,
-        Ldp.indirect_container
+        RDF::Vocab::LDP.BasicContainer,
+        RDF::Vocab::LDP.DirectContainer,
+        RDF::Vocab::LDP.IndirectContainer
       ].any? { |x| Array(links(response)[TYPE]).include? x.to_s }
     end
 
@@ -58,18 +58,14 @@ module Ldp
     # Is the response an LDP RDFSource?
     #   ldp:Container is a subclass of ldp:RDFSource
     def self.rdf_source? response
-      container?(response) || Array(links(response)[TYPE]).include?(Ldp.rdf_source)
+      container?(response) || Array(links(response)[TYPE]).include?(RDF::Vocab::LDP.RDFSource)
     end
 
     def dup
       super.tap do |new_resp|
         new_resp.send(:extend, Ldp::Response)
         unless new_resp.instance_variable_get(:@graph).nil?
-          if ::RUBY_VERSION < '2.0'
-            new_resp.send(:remove_instance_variable, :@graph)
-          else
-            new_resp.remove_instance_variable(:@graph)
-          end
+          new_resp.remove_instance_variable(:@graph)
         end
       end
     end
@@ -116,14 +112,14 @@ module Ldp
     ##
     # Is the response paginated?
     def has_page?
-      rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, Ldp.page))
+      rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, RDF::Vocab::LDP.Page))
     end
 
     ##
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
-        raise UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
+        raise Ldp::UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
         graph = RDF::Graph.new
 
         if resource?

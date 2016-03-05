@@ -4,15 +4,19 @@ module Ldp
     require 'ldp/container/direct'
     require 'ldp/container/indirect'
 
-    def self.new_from_response client, subject, data
+    def self.for(client, subject, data)
       case
-      when data.types.include?(Ldp.indirect_container)
+      when data.types.include?(RDF::Vocab::LDP.IndirectContainer)
         Ldp::Container::Indirect.new client, subject, data
-      when data.types.include?(Ldp.direct_container)
+      when data.types.include?(RDF::Vocab::LDP.DirectContainer)
         Ldp::Container::Direct.new client, subject, data
       else
         Ldp::Container::Basic.new client, subject, data
       end
+    end
+
+    class << self
+      alias new_from_response for
     end
 
     ##

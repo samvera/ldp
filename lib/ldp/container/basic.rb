@@ -6,7 +6,7 @@ module Ldp
     end
 
     def contains
-      @contains ||= Hash[get.graph.query(predicate: Ldp.contains).map do |x| 
+      @contains ||= Hash[get.graph.query(predicate: RDF::Vocab::LDP.contains).map do |x|
         [x.object, Ldp::Resource::RdfSource.new(client, x.object, contained_graph(x.object))]
       end]
     end
@@ -14,7 +14,7 @@ module Ldp
     protected
 
     def interaction_model
-      Ldp.basic_container
+      RDF::Vocab::LDP.BasicContainer
     end
     
     private

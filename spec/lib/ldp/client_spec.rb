@@ -9,13 +9,13 @@ describe "Ldp::Client" do
 
   let(:paginatedGraph) do
     graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
-    graph << [RDF::URI.new("?firstPage"), RDF.type, Ldp.page]
-    graph << [RDF::URI.new("?firstPage"), Ldp.page_of, RDF::URI.new("")]
+    graph << [RDF::URI.new("?firstPage"), RDF.type, RDF::Vocab::LDP.Page]
+    graph << [RDF::URI.new("?firstPage"), RDF::Vocab::LDP.page_of, RDF::URI.new("")]
     graph.dump(:ttl)
   end
 
   let(:simple_container_graph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, Ldp.container]
+    graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, RDF::Vocab::LDP.Container]
     graph.dump(:ttl)
   end
 
@@ -94,12 +94,12 @@ describe "Ldp::Client" do
       end
       it "should set the include parameter" do
         subject.get "a_resource", include: "membership" do |req|
-          expect(req.headers["Prefer"]).to match "include=\"#{Ldp.prefer_membership}\""
+          expect(req.headers["Prefer"]).to match "include=\"#{RDF::Vocab::LDP.PreferMembership}\""
         end
       end
       it "should set the omit parameter" do
         subject.get "a_resource", omit: "containment" do |req|
-          expect(req.headers["Prefer"]).to match "omit=\"#{Ldp.prefer_containment}\""
+          expect(req.headers["Prefer"]).to match "omit=\"#{RDF::Vocab::LDP.PreferContainment}\""
         end
       end
     end

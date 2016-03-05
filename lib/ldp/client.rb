@@ -12,19 +12,10 @@ module Ldp
     end
 
     # Find or initialize a new LDP resource by URI
-    def find_or_initialize subject, options = {}
+    def find_or_initialize(subject, options = {})
       data = get(subject, options = {})
 
-      case
-      when !data.is_a?(Ldp::Response)
-        Resource::BinarySource.new self, subject, data
-      when data.container?
-        Ldp::Container.new_from_response self, subject, data
-      when data.rdf_source?
-        Resource::RdfSource.new self, subject, data
-      else
-        Resource::BinarySource.new self, subject, data
-      end
+      Ldp::Resource.for(self, subject, data)
     end
 
     def logger
