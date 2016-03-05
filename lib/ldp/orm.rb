@@ -54,22 +54,19 @@ module Ldp
 
     def save
       Ldp.instrument 'save.orm.ldp', subject: subject_uri do
-        @last_response = resource.save
-        @last_response.success?
+        response = create_or_update
+
+        response.success?
       end
-    rescue Ldp::HttpError => e
-      @last_response = e
-      logger.debug e
+    rescue Ldp::HttpError
       false
     end
 
     def save!
-      result = save
+      result = create_or_update
 
       if result.is_a? RDF::Enumerable
         raise Ldp::GraphDifferenceException, 'Graph failed to persist', result
-      elsif !result
-        raise @last_response
       end
 
       result
@@ -82,6 +79,14 @@ module Ldp
     end
 
     private
+
+    def create_or_update
+      @last_response = resource.save
+    rescue Ldp::HttpError => e
+      @last_response = e
+      logger.debug e
+      raise e
+    end
 
     def logger
       Ldp.logger
