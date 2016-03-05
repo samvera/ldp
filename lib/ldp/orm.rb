@@ -81,14 +81,6 @@ module Ldp
       end
     end
 
-    def method_missing meth, *args, &block
-      super
-    end
-
-    def respond_to?(meth)
-      super
-    end
-
     private
 
     def logger
