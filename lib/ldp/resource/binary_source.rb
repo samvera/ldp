@@ -30,7 +30,7 @@ module Ldp
     protected
 
     def interaction_model
-      Ldp.non_rdf_source
+      RDF::Vocab::LDP.NonRDFSource
     end
   end
 end

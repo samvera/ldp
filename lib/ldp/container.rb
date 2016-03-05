@@ -6,9 +6,9 @@ module Ldp
 
     def self.for(client, subject, data)
       case
-      when data.types.include?(Ldp.indirect_container)
+      when data.types.include?(RDF::Vocab::LDP.IndirectContainer)
         Ldp::Container::Indirect.new client, subject, data
-      when data.types.include?(Ldp.direct_container)
+      when data.types.include?(RDF::Vocab::LDP.DirectContainer)
         Ldp::Container::Direct.new client, subject, data
       else
         Ldp::Container::Basic.new client, subject, data

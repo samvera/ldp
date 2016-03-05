@@ -41,16 +41,16 @@ module Ldp
     # Is the response an LDP resource?
 
     def self.resource? response
-      Array(links(response)[TYPE]).include? Ldp.resource.to_s
+      Array(links(response)[TYPE]).include? RDF::Vocab::LDP.Resource.to_s
     end
 
     ##
     # Is the response an LDP container?
     def self.container? response
       [
-        Ldp.basic_container,
-        Ldp.direct_container,
-        Ldp.indirect_container
+        RDF::Vocab::LDP.BasicContainer,
+        RDF::Vocab::LDP.DirectContainer,
+        RDF::Vocab::LDP.IndirectContainer
       ].any? { |x| Array(links(response)[TYPE]).include? x.to_s }
     end
 
@@ -58,7 +58,7 @@ module Ldp
     # Is the response an LDP RDFSource?
     #   ldp:Container is a subclass of ldp:RDFSource
     def self.rdf_source? response
-      container?(response) || Array(links(response)[TYPE]).include?(Ldp.rdf_source)
+      container?(response) || Array(links(response)[TYPE]).include?(RDF::Vocab::LDP.RDFSource)
     end
 
     def dup
@@ -112,7 +112,7 @@ module Ldp
     ##
     # Is the response paginated?
     def has_page?
-      rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, Ldp.page))
+      rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, RDF::Vocab::LDP.Page))
     end
 
     ##

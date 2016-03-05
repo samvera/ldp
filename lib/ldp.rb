@@ -1,7 +1,9 @@
 require 'ldp/version'
 require 'linkeddata'
+require 'rdf/vocab/ldp'
 require 'logger'
 require 'singleton'
+require 'deprecation'
 
 module Ldp
   RDF::Graph.send(:include, RDF::Isomorphic)

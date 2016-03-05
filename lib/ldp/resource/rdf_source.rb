@@ -46,7 +46,7 @@ module Ldp
     protected
 
     def interaction_model
-      Ldp.resource
+      RDF::Vocab::LDP.Resource
     end
 
     private
@@ -69,7 +69,7 @@ module Ldp
       # @param [RDF::Graph] original_graph The graph returned by the LDP server
       # @return [RDF::Graph] A graph striped of any inlined resources present in the original
       def build_graph(original_graph)
-        inlined_resources = response_as_graph(get).query(predicate: Ldp.contains).map { |x| x.object }
+        inlined_resources = response_as_graph(get).query(predicate: RDF::Vocab::LDP.contains).map { |x| x.object }
 
         # we want to scope this graph to just statements about this model, not contained relations
         if inlined_resources.empty?

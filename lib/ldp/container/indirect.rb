@@ -11,7 +11,7 @@ module Ldp
     protected
 
     def interaction_model
-      Ldp.indirect_container
+      RDF::Vocab::LDP.IndirectContainer
     end
   end
 end

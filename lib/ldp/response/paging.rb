@@ -22,7 +22,7 @@ module Ldp
     # Get the subject for the response
     def subject
       @subject ||= if has_page?
-        graph.first_object [page_subject, Ldp.page_of, nil]
+        graph.first_object [page_subject, RDF::Vocab::LDP.pageOf, nil]
       else
         page_subject
       end
@@ -37,7 +37,7 @@ module Ldp
     ##
     # Get the URI for the next page
     def next_page
-      graph.first_object [page_subject, Ldp.nextPage, nil]
+      graph.first_object [page_subject, RDF::Vocab::LDP.nextPage, nil]
     end
 
     ##
@@ -45,7 +45,7 @@ module Ldp
     def first_page
       if links['first']
         RDF::URI.new links['first']
-      elsif graph.has_statement? RDf::Statement.new(page_subject, Ldp.nextPage, nil)
+      elsif graph.has_statement? RDf::Statement.new(page_subject, RDF::Vocab::LDP.nextPage, nil)
         subject
       end
     end
