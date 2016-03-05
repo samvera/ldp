@@ -65,11 +65,7 @@ module Ldp
       super.tap do |new_resp|
         new_resp.send(:extend, Ldp::Response)
         unless new_resp.instance_variable_get(:@graph).nil?
-          if ::RUBY_VERSION < '2.0'
-            new_resp.send(:remove_instance_variable, :@graph)
-          else
-            new_resp.remove_instance_variable(:@graph)
-          end
+          new_resp.remove_instance_variable(:@graph)
         end
       end
     end
