@@ -8,14 +8,12 @@ module Ldp
 
     def self.for(client, subject, response = nil)
       case
-      when !response.is_a?(Ldp::Response)
-        Resource::BinarySource.new client, subject, data
       when response.container?
-        Ldp::Container.for client, subject, data
+        Ldp::Container.for client, subject, response
       when response.rdf_source?
-        Resource::RdfSource.new client, subject, data
+        Resource::RdfSource.new client, subject, response
       else
-        Resource::BinarySource.new client, subject, data
+        Resource::BinarySource.new client, subject, response
       end
     end
 
