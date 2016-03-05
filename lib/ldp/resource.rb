@@ -114,8 +114,9 @@ module Ldp
         new_response.headers['Last-Modified'] == response.headers['Last-Modified']
     end
 
-    def update_cached_get response
-      Response.wrap(client, response)
+    def update_cached_get(response)
+      response = Response.wrap(client, response)
+
       if response.etag.nil? || response.last_modified.nil?
         response = Response.wrap(client, client.head(subject))
       end
