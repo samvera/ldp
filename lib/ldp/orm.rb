@@ -67,7 +67,7 @@ module Ldp
       result = save
 
       if result.is_a? RDF::Enumerable
-        raise GraphDifferenceException.new "", result
+        raise Ldp::GraphDifferenceException, 'Graph failed to persist', result
       elsif !result
         raise @last_response
       end
@@ -85,14 +85,6 @@ module Ldp
 
     def logger
       Ldp.logger
-    end
-  end
-
-  class GraphDifferenceException < Exception
-    attr_reader :diff
-    def initialize message, diff
-      super(message)
-      @diff = diff
     end
   end
 end

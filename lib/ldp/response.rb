@@ -119,7 +119,7 @@ module Ldp
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
-        raise UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
+        raise Ldp::UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
         graph = RDF::Graph.new
 
         if resource?

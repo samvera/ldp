@@ -78,7 +78,7 @@ module Ldp
     # Create a new resource at the URI
     # @return [RdfSource] the new representation
     def create &block
-      raise "Can't call create on an existing resource" unless new?
+      raise Ldp::Error, "Can't call create on an existing resource" unless new?
       verb = subject.nil? ? :post : :put
       resp = client.send(verb, (subject || @base_path), content) do |req|
         req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
