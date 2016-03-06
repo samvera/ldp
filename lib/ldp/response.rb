@@ -10,6 +10,8 @@ module Ldp
 
     attr_reader :response
 
+    attr_writer :etag, :last_modified
+
     def initialize(response)
       @response = response
     end
@@ -117,18 +119,10 @@ module Ldp
       @etag ||= headers['ETag'.freeze]
     end
 
-    def etag=(val)
-      @etag = val
-    end
-
     ##
     # Extract the last modified header for the resource
     def last_modified
       @last_modified ||= headers['Last-Modified'.freeze]
-    end
-
-    def last_modified=(val)
-      @last_modified = val
     end
 
     ##
