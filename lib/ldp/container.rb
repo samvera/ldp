@@ -61,5 +61,11 @@ module Ldp
       end
       g
     end
+
+    def rdf_source_for(object)
+      g = contained_graph(object)
+
+      Ldp::Resource::RdfSource.new(client, object, (g unless g.empty?))
+    end
   end
 end

@@ -8,14 +8,7 @@ describe Ldp::Response do
   let(:mock_client) { double(Ldp::Client) }
 
   subject do
-    Ldp::Response.wrap mock_client, mock_response
-  end
-
-  describe ".wrap" do
-    it "should mixin Ldp::Response into the raw response" do
-      Ldp::Response.wrap(mock_client, mock_response)
-      expect(mock_response).to be_a_kind_of(Ldp::Response)
-    end
+    Ldp::Response.new mock_response
   end
 
   describe "#dup" do
@@ -27,7 +20,7 @@ describe Ldp::Response do
         stub.get('/a_container') { [200, {"Link" => link}, body] }
       end
     end
-    let(:response) { Ldp::Response.wrap mock_client, raw_response }
+    let(:response) { Ldp::Response.new raw_response }
 
     subject { response.dup }
 
@@ -61,7 +54,7 @@ describe Ldp::Response do
   end
 
 
-  describe ".links" do
+  describe "#links" do
     it "should extract link headers with relations as a hash" do
       allow(mock_response).to receive(:headers).and_return(
         "Link" => [
@@ -71,7 +64,7 @@ describe Ldp::Response do
             "<vanilla-link>"
           ]
         )
-      h = Ldp::Response.links mock_response
+      h = subject.links
 
       expect(h['some-rel']).to include("xyz")
       expect(h['some-multi-rel']).to include("abc", "123")
@@ -80,21 +73,21 @@ describe Ldp::Response do
 
     it "should return an empty hash if no link headers are availabe" do
       allow(mock_response).to receive(:headers).and_return({})
-      h = Ldp::Response.links mock_response
+      h = subject.links
 
       expect(h).to be_empty
     end
 
   end
 
-  describe ".resource?" do
+  describe "#resource?" do
     it "should be a resource if a Link[rel=type] header asserts it is an ldp:resource" do
       allow(mock_response).to receive(:headers).and_return(
         "Link" => [
             "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\""
           ]
         )
-      expect(Ldp::Response.resource? mock_response).to be true
+      expect(subject.resource?).to be true
     end
   end
 

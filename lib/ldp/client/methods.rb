@@ -48,7 +48,7 @@ module Ldp::Client::Methods
         yield req if block_given?
       end
 
-      Ldp::Response.wrap self, resp
+      resp = Ldp::Response.new(resp)
 
       check_for_errors(resp)
     end

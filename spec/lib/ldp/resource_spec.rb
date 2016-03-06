@@ -47,7 +47,7 @@ describe Ldp::Resource do
     context "when the resource is in the repository" do
       let(:path) { '/a_resource' }
       it "should get the response" do
-        expect(subject.get).to be_kind_of Faraday::Response
+        expect(subject.get).to be_kind_of Ldp::Response
         expect(subject.get.status).to eq 200
       end
     end

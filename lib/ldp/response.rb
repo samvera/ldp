@@ -1,35 +1,40 @@
 module Ldp
-  module Response
+  class Response
+    extend Forwardable
+    def_delegators :@response, :body, :headers, :env, :success?, :status
+
     require 'ldp/response/paging'
+    include Ldp::Response::Paging
 
     TYPE = 'type'.freeze
-    ##
-    # Wrap the raw Faraday respone with our LDP extensions
-    def self.wrap client, raw_resp
-      raw_resp.send(:extend, Ldp::Response)
-      raw_resp.send(:extend, Ldp::Response::Paging) if raw_resp.has_page?
-      raw_resp
+
+    attr_reader :response
+
+    def initialize(response)
+      @response = response
     end
 
     ##
     # Extract the Link: headers from the HTTP resource
-    def self.links response
-      h = {}
-      Array(response.headers['Link'.freeze]).map { |x| x.split(','.freeze) }.flatten.inject(h) do |memo, header|
-        m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
-        if m
-          memo[m[:rel]] ||= []
-          memo[m[:rel]] << m[:link]
-        end
+    def links
+      @links ||= begin
+        h = {}
+        Array(headers['Link'.freeze]).map { |x| x.split(','.freeze) }.flatten.inject(h) do |memo, header|
+          m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
+          if m
+            memo[m[:rel]] ||= []
+            memo[m[:rel]] << m[:link]
+          end
 
-        memo
+          memo
+        end
       end
     end
 
-    def self.applied_preferences headers
+    def applied_preferences
       h = {}
 
-      Array(headers).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
+      Array(headers['Preference-Applied'.freeze]).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
         m = header.match(/(?<key>[^=;]*)(=(?<value>[^;,]*))?(;\s*(?<params>[^,]*))?/)
         includes = (m[:params].match(/include="(?<include>[^"]+)"/)[:include] || "").split(" ")
         omits = (m[:params].match(/omit="(?<omit>[^"]+)"/)[:omit] || "").split(" ")
@@ -40,63 +45,35 @@ module Ldp
     ##
     # Is the response an LDP resource?
 
-    def self.resource? response
-      Array(links(response)[TYPE]).include? RDF::Vocab::LDP.Resource.to_s
+    def resource?
+      Array(links[TYPE]).include? RDF::Vocab::LDP.Resource.to_s
     end
 
     ##
     # Is the response an LDP container?
-    def self.container? response
+    def container?
       [
         RDF::Vocab::LDP.BasicContainer,
         RDF::Vocab::LDP.DirectContainer,
         RDF::Vocab::LDP.IndirectContainer
-      ].any? { |x| Array(links(response)[TYPE]).include? x.to_s }
+      ].any? { |x| Array(links[TYPE]).include? x.to_s }
     end
 
     ##
     # Is the response an LDP RDFSource?
     #   ldp:Container is a subclass of ldp:RDFSource
-    def self.rdf_source? response
-      container?(response) || Array(links(response)[TYPE]).include?(RDF::Vocab::LDP.RDFSource)
+    def rdf_source?
+      container? || Array(links[TYPE]).include?(RDF::Vocab::LDP.RDFSource)
     end
 
     def dup
       super.tap do |new_resp|
-        new_resp.send(:extend, Ldp::Response)
         unless new_resp.instance_variable_get(:@graph).nil?
           new_resp.remove_instance_variable(:@graph)
         end
       end
     end
 
-    ##
-    # Link: headers from the HTTP response
-    def links
-      @links ||= Ldp::Response.links(self)
-    end
-
-    ##
-    # Is the response an LDP resource?
-    def resource?
-      Ldp::Response.resource?(self)
-    end
-
-    ##
-    # Is the response an LDP rdf source?
-    def rdf_source?
-      Ldp::Response.rdf_source?(self)
-    end
-
-    ##
-    # Is the response an LDP container
-    def container?
-      Ldp::Response.container?(self)
-    end
-
-    def preferences
-      Ldp::Resource.applied_preferences(headers['Preference-Applied'.freeze])
-    end
     ##
     # Get the subject for the response
     def subject

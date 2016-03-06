@@ -4,7 +4,7 @@ module Ldp
       return enum_for(:members) unless block_given?
 
       response_graph.query(predicate: member_relation, object: subject).map do |x|
-        yield contains[x.object] || Ldp::Resource::RdfSource.new(client, x.object)
+        yield rdf_source_for(x.object)
       end
     end
 
