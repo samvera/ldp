@@ -1,7 +1,6 @@
 module Ldp
   class Response
     extend Forwardable
-    def_delegators :@response, :body, :headers, :env, :success?, :status
 
     TYPE = 'type'.freeze
 
@@ -86,7 +85,7 @@ module Ldp
     ##
     # Get the URI to the response
     def page_subject
-      @page_subject ||= RDF::URI.new env[:url]
+      @page_subject ||= RDF::URI.new response.env[:url]
     end
 
     ##
@@ -95,22 +94,31 @@ module Ldp
       rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, RDF::Vocab::LDP.Page))
     end
 
+    def body
+      response.body
+    end
+
     ##
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
-        raise Ldp::UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
         graph = RDF::Graph.new
 
-        if resource?
-          RDF::Reader.for(:ttl).new(response_body, base_uri: page_subject) do |reader|
-            reader.each_statement do |s|
-              graph << s
-            end
+        reader do |reader|
+          reader.each_statement do |s|
+            graph << s
           end
         end
 
         graph
+      end
+    end
+
+    def reader(&block)
+      content_type = content_type || 'text/turtle'
+      content_type = Array(content_type).first
+      RDF::Reader.for(content_type: content_type).new(body, base_uri: page_subject) do |reader|
+        yield reader
       end
     end
 
@@ -184,15 +192,15 @@ module Ldp
       end
     end
 
+    def content_type
+      headers['Content-Type']
+    end
 
     private
 
-      # Get the body and ensure it's UTF-8 encoded. Since Fedora 9.3 isn't
-      # returning a charset, then Net::HTTP is just returning ASCII-8BIT
-      # See https://github.com/ruby-rdf/rdf-turtle/issues/13
-      # See https://jira.duraspace.org/browse/FCREPO-1750
-      def response_body
-        body.force_encoding('utf-8')
-      end
+    def headers
+      response.headers
+    end
+
   end
 end

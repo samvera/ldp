@@ -48,7 +48,6 @@ describe Ldp::Resource do
       let(:path) { '/a_resource' }
       it "should get the response" do
         expect(subject.get).to be_kind_of Ldp::Response
-        expect(subject.get.status).to eq 200
       end
     end
   end

@@ -14,13 +14,12 @@ describe Ldp::Response do
   describe "#dup" do
     let(:mock_conn) { Faraday.new { |builder| builder.adapter :test, conn_stubs } }
     let(:client) { Ldp::Client.new mock_conn }
-    let(:raw_response) { client.get "a_container" }
     let(:conn_stubs) do
       Faraday::Adapter::Test::Stubs.new do |stub|
         stub.get('/a_container') { [200, {"Link" => link}, body] }
       end
     end
-    let(:response) { Ldp::Response.new raw_response }
+    let(:response) { client.get "a_container" }
 
     subject { response.dup }
 
@@ -100,14 +99,6 @@ describe Ldp::Response do
 
         expect(graph).to have_subject(RDF::URI.new("info:a"))
         expect(graph).to have_statement RDF::Statement.new(RDF::URI.new("info:a"), RDF::URI.new("info:b"), RDF::URI.new("info:c"))
-      end
-    end
-
-    context "for a NonRDFSource" do
-      it "should parse the response body for an RDF graph" do
-        allow(mock_response).to receive(:body).and_return("<> <info:b> <info:c> .")
-        allow(mock_response).to receive(:headers).and_return(LDP_NON_RDF_SOURCE_HEADERS)
-        expect { subject.graph }.to raise_error Ldp::UnexpectedContentType
       end
     end
   end
