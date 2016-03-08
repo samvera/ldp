@@ -118,7 +118,7 @@ module Ldp
       response = Response.new(response)
 
       if response.etag.nil? || response.last_modified.nil?
-        response = Response.new(client.head(subject))
+        response = client.head(subject)
       end
       @get.etag = response.etag
       @get.last_modified = response.last_modified

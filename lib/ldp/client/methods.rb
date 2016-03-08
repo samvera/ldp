@@ -23,6 +23,8 @@ module Ldp::Client::Methods
       end
 
       check_for_errors(resp)
+
+      Ldp::Response.new(resp)
     end
   end
 
