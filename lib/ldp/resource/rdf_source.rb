@@ -70,10 +70,8 @@ module Ldp
       # @return [RDF::Graph]
       def response_as_graph(resp)
         graph = build_empty_graph
-        resp.reader do |reader|
-          reader.each_statement do |stmt|
-            graph << stmt
-          end
+        resp.each_statement do |stmt|
+          graph << stmt
         end
         graph
       end

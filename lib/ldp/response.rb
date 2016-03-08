@@ -1,3 +1,5 @@
+require 'uri'
+
 module Ldp
   class Response
     extend Forwardable
@@ -103,22 +105,18 @@ module Ldp
     def graph
       @graph ||= begin
         graph = RDF::Graph.new
-
-        reader do |reader|
-          reader.each_statement do |s|
-            graph << s
-          end
-        end
-
+        each_statement { |s| graph << s }
         graph
       end
     end
 
     def reader(&block)
-      content_type = content_type || 'text/turtle'
-      content_type = Array(content_type).first
-      RDF::Reader.for(content_type: content_type).new(body, base_uri: page_subject) do |reader|
-        yield reader
+      reader_for_content_type.new(body, base_uri: page_subject, &block)
+    end
+
+    def each_statement(&block)
+      reader do |reader|
+        reader.each_statement(&block)
       end
     end
 
@@ -211,5 +209,10 @@ module Ldp
       response.headers
     end
 
+    def reader_for_content_type
+      content_type = content_type || 'text/turtle'
+      content_type = Array(content_type).first
+      RDF::Reader.for(content_type: content_type)
+    end
   end
 end
