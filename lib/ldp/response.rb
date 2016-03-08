@@ -196,6 +196,15 @@ module Ldp
       headers['Content-Type']
     end
 
+    def content_length
+      headers['Content-Length'].to_i
+    end
+
+    def content_disposition_filename
+      m = headers['Content-Disposition'].match(/filename="(?<filename>[^"]*)";/)
+      URI.decode(m[:filename]) if m
+    end
+
     private
 
     def headers

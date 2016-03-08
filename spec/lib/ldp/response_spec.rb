@@ -171,4 +171,40 @@ describe Ldp::Response do
       expect(subject.subject).to eq(RDF::URI.new("http://xyz/a"))
     end
   end
+
+  describe '#content_type' do
+    before do
+      allow(mock_response).to receive(:headers).and_return(
+        'Content-Type' => 'application/octet-stream'
+      )
+    end
+
+    it 'provides the content type from the response' do
+      expect(subject.content_type).to eq 'application/octet-stream'
+    end
+  end
+
+  describe '#content_length' do
+    before do
+      allow(mock_response).to receive(:headers).and_return(
+        'Content-Length' => '123'
+      )
+    end
+
+    it 'provides the content length from the response' do
+      expect(subject.content_length).to eq 123
+    end
+  end
+
+  describe '#content_disposition_filename' do
+    before do
+      allow(mock_response).to receive(:headers).and_return(
+        'Content-Disposition' => 'filename="xyz.txt";'
+      )
+    end
+
+    it 'provides the filename from the content disposition header' do
+      expect(subject.content_disposition_filename).to eq 'xyz.txt'
+    end
+  end
 end
