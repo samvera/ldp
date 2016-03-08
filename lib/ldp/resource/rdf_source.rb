@@ -61,7 +61,7 @@ module Ldp
     protected
 
     def interaction_model
-      RDF::Vocab::LDP.Resource
+      RDF::Vocab::LDP.Resource unless client.options[:omit_ldpr_interaction_model]
     end
 
     private
