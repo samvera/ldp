@@ -6,14 +6,6 @@ describe "Ldp::Client" do
     graph.dump(:ttl)
   end
 
-
-  let(:paginatedGraph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
-    graph << [RDF::URI.new("?firstPage"), RDF.type, RDF::Vocab::LDP.Page]
-    graph << [RDF::URI.new("?firstPage"), RDF::Vocab::LDP.page_of, RDF::URI.new("")]
-    graph.dump(:ttl)
-  end
-
   let(:simple_container_graph) do
     graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, RDF::Vocab::LDP.Container]
     graph.dump(:ttl)
@@ -62,6 +54,23 @@ describe "Ldp::Client" do
     it "should create a connection from Faraday constructor params" do
       client = Ldp::Client.new "http://example.com"
       expect(client.http.host).to eq("example.com")
+    end
+
+    it 'accepts a connection and client options' do
+      conn = Faraday.new "http://example.com"
+      client = Ldp::Client.new conn, omit_ldpr_interaction_model: true
+      expect(client.http).to eq(conn)
+      expect(client.options[:omit_ldpr_interaction_model]).to eq true
+    end
+
+    it 'raises an ArgumentError with bad arguments' do
+      expect { Ldp::Client.new(nil, nil, nil) }.to raise_error ArgumentError
+    end
+  end
+
+  describe '#logger' do
+    it 'inherits the upstream logger' do
+      expect(subject.logger).to eq Ldp.logger
     end
   end
 

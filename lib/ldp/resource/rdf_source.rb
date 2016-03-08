@@ -28,7 +28,7 @@ module Ldp
     end
 
     def graph
-      @graph ||= new? ? build_empty_graph : build_graph(response_as_graph(get))
+      @graph ||= new? ? build_empty_graph : filtered_graph(response_graph)
     end
 
     def build_empty_graph
@@ -38,15 +38,30 @@ module Ldp
     ##
     # graph_class may be overridden so that a subclass of RDF::Graph
     # is returned (e.g. an ActiveTriples resource)
-    # @returns [Class] a class that is an descendant of RDF::Graph
+    # @return [Class] a class that is an descendant of RDF::Graph
     def graph_class
       RDF::Graph
+    end
+
+    ##
+    # Parse the graph returned by the LDP server into an RDF::Graph
+    # @return [RDF::Graph]
+    def response_graph
+      @response_graph ||= response_as_graph(get)
+    end
+
+    # Get the body and ensure it's UTF-8 encoded. Since Fedora 9.3 isn't
+    # returning a charset, then Net::HTTP is just returning ASCII-8BIT
+    # See https://github.com/ruby-rdf/rdf-turtle/issues/13
+    # See https://jira.duraspace.org/browse/FCREPO-1750
+    def body
+      body.force_encoding('utf-8')
     end
 
     protected
 
     def interaction_model
-      RDF::Vocab::LDP.Resource
+      RDF::Vocab::LDP.Resource unless client.options[:omit_ldpr_interaction_model]
     end
 
     private
@@ -54,22 +69,18 @@ module Ldp
       # @param [Faraday::Response] graph query response
       # @return [RDF::Graph]
       def response_as_graph(resp)
-        content_type = resp.headers['Content-Type'] || 'text/turtle'
-        content_type = Array(content_type).first
-        format = Array(RDF::Format.content_types[content_type]).first
-        source = resp.body
-        reader = RDF::Reader.for(content_type:content_type).new(source, base_uri:subject)
         graph = build_empty_graph
-        reader.each_statement do |stmt|
+        resp.each_statement do |stmt|
           graph << stmt
         end
         graph
       end
+
       ##
       # @param [RDF::Graph] original_graph The graph returned by the LDP server
-      # @return [RDF::Graph] A graph striped of any inlined resources present in the original
-      def build_graph(original_graph)
-        inlined_resources = response_as_graph(get).query(predicate: RDF::Vocab::LDP.contains).map { |x| x.object }
+      # @return [RDF::Graph] A graph stripped of any inlined resources present in the original
+      def filtered_graph(original_graph)
+        inlined_resources = original_graph.query(predicate: RDF::Vocab::LDP.contains).map { |x| x.object }
 
         # we want to scope this graph to just statements about this model, not contained relations
         if inlined_resources.empty?

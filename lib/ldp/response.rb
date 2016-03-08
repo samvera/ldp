@@ -1,35 +1,40 @@
+require 'uri'
+
 module Ldp
-  module Response
-    require 'ldp/response/paging'
+  class Response
+    extend Forwardable
 
     TYPE = 'type'.freeze
-    ##
-    # Wrap the raw Faraday respone with our LDP extensions
-    def self.wrap client, raw_resp
-      raw_resp.send(:extend, Ldp::Response)
-      raw_resp.send(:extend, Ldp::Response::Paging) if raw_resp.has_page?
-      raw_resp
+
+    attr_reader :response
+
+    attr_writer :etag, :last_modified
+
+    def initialize(response)
+      @response = response
     end
 
     ##
     # Extract the Link: headers from the HTTP resource
-    def self.links response
-      h = {}
-      Array(response.headers['Link'.freeze]).map { |x| x.split(','.freeze) }.flatten.inject(h) do |memo, header|
-        m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
-        if m
-          memo[m[:rel]] ||= []
-          memo[m[:rel]] << m[:link]
-        end
+    def links
+      @links ||= begin
+        h = {}
+        Array(headers['Link'.freeze]).map { |x| x.split(','.freeze) }.flatten.inject(h) do |memo, header|
+          m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
+          if m
+            memo[m[:rel]] ||= []
+            memo[m[:rel]] << m[:link]
+          end
 
-        memo
+          memo
+        end
       end
     end
 
-    def self.applied_preferences headers
+    def applied_preferences
       h = {}
 
-      Array(headers).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
+      Array(headers['Preference-Applied'.freeze]).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
         m = header.match(/(?<key>[^=;]*)(=(?<value>[^;,]*))?(;\s*(?<params>[^,]*))?/)
         includes = (m[:params].match(/include="(?<include>[^"]+)"/)[:include] || "").split(" ")
         omits = (m[:params].match(/omit="(?<omit>[^"]+)"/)[:omit] || "").split(" ")
@@ -40,30 +45,29 @@ module Ldp
     ##
     # Is the response an LDP resource?
 
-    def self.resource? response
-      Array(links(response)[TYPE]).include? RDF::Vocab::LDP.Resource.to_s
+    def resource?
+      Array(links[TYPE]).include? RDF::Vocab::LDP.Resource.to_s
     end
 
     ##
     # Is the response an LDP container?
-    def self.container? response
+    def container?
       [
         RDF::Vocab::LDP.BasicContainer,
         RDF::Vocab::LDP.DirectContainer,
         RDF::Vocab::LDP.IndirectContainer
-      ].any? { |x| Array(links(response)[TYPE]).include? x.to_s }
+      ].any? { |x| Array(links[TYPE]).include? x.to_s }
     end
 
     ##
     # Is the response an LDP RDFSource?
     #   ldp:Container is a subclass of ldp:RDFSource
-    def self.rdf_source? response
-      container?(response) || Array(links(response)[TYPE]).include?(RDF::Vocab::LDP.RDFSource)
+    def rdf_source?
+      container? || Array(links[TYPE]).include?(RDF::Vocab::LDP.RDFSource)
     end
 
     def dup
       super.tap do |new_resp|
-        new_resp.send(:extend, Ldp::Response)
         unless new_resp.instance_variable_get(:@graph).nil?
           new_resp.remove_instance_variable(:@graph)
         end
@@ -71,42 +75,19 @@ module Ldp
     end
 
     ##
-    # Link: headers from the HTTP response
-    def links
-      @links ||= Ldp::Response.links(self)
-    end
-
-    ##
-    # Is the response an LDP resource?
-    def resource?
-      Ldp::Response.resource?(self)
-    end
-
-    ##
-    # Is the response an LDP rdf source?
-    def rdf_source?
-      Ldp::Response.rdf_source?(self)
-    end
-
-    ##
-    # Is the response an LDP container
-    def container?
-      Ldp::Response.container?(self)
-    end
-
-    def preferences
-      Ldp::Resource.applied_preferences(headers['Preference-Applied'.freeze])
-    end
-    ##
     # Get the subject for the response
     def subject
-      page_subject
+      @subject ||= if has_page?
+        graph.first_object [page_subject, RDF::Vocab::LDP.pageOf, nil]
+      else
+        page_subject
+      end
     end
 
     ##
     # Get the URI to the response
     def page_subject
-      @page_subject ||= RDF::URI.new env[:url]
+      @page_subject ||= RDF::URI.new response.env[:url]
     end
 
     ##
@@ -115,22 +96,27 @@ module Ldp
       rdf_source? && graph.has_statement?(RDF::Statement.new(page_subject, RDF.type, RDF::Vocab::LDP.Page))
     end
 
+    def body
+      response.body
+    end
+
     ##
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
-        raise Ldp::UnexpectedContentType, "The resource at #{page_subject} is not an RDFSource" unless rdf_source?
         graph = RDF::Graph.new
-
-        if resource?
-          RDF::Reader.for(:ttl).new(response_body, base_uri: page_subject) do |reader|
-            reader.each_statement do |s|
-              graph << s
-            end
-          end
-        end
-
+        each_statement { |s| graph << s }
         graph
+      end
+    end
+
+    def reader(&block)
+      reader_for_content_type.new(body, base_uri: page_subject, &block)
+    end
+
+    def each_statement(&block)
+      reader do |reader|
+        reader.each_statement(&block)
       end
     end
 
@@ -140,18 +126,10 @@ module Ldp
       @etag ||= headers['ETag'.freeze]
     end
 
-    def etag=(val)
-      @etag = val
-    end
-
     ##
     # Extract the last modified header for the resource
     def last_modified
       @last_modified ||= headers['Last-Modified'.freeze]
-    end
-
-    def last_modified=(val)
-      @last_modified = val
     end
 
     ##
@@ -172,14 +150,69 @@ module Ldp
       preferences[RETURN][:value] == "minimal"
     end
 
+    ##
+    # Statements about the page
+    def page
+      @page_graph ||= begin
+        g = RDF::Graph.new  
+
+        if resource?
+          res = graph.query RDF::Statement.new(page_subject, nil, nil)
+
+          res.each_statement do |s|
+            g << s
+          end
+        end
+
+        g
+      end
+    end
+
+    ##
+    # Is there a next page?
+    def has_next?
+      next_page != nil
+    end
+
+    ##
+    # Get the URI for the next page
+    def next_page
+      graph.first_object [page_subject, RDF::Vocab::LDP.nextPage, nil]
+    end
+
+    ##
+    # Get the URI to the first page
+    def first_page
+      if links['first']
+        RDF::URI.new links['first']
+      elsif graph.has_statement? RDf::Statement.new(page_subject, RDF::Vocab::LDP.nextPage, nil)
+        subject
+      end
+    end
+
+    def content_type
+      headers['Content-Type']
+    end
+
+    def content_length
+      headers['Content-Length'].to_i
+    end
+
+    def content_disposition_filename
+      m = headers['Content-Disposition'].match(/filename="(?<filename>[^"]*)";/)
+      URI.decode(m[:filename]) if m
+    end
+
     private
 
-      # Get the body and ensure it's UTF-8 encoded. Since Fedora 9.3 isn't
-      # returning a charset, then Net::HTTP is just returning ASCII-8BIT
-      # See https://github.com/ruby-rdf/rdf-turtle/issues/13
-      # See https://jira.duraspace.org/browse/FCREPO-1750
-      def response_body
-        body.force_encoding('utf-8')
-      end
+    def headers
+      response.headers
+    end
+
+    def reader_for_content_type
+      content_type = content_type || 'text/turtle'
+      content_type = Array(content_type).first
+      RDF::Reader.for(content_type: content_type)
+    end
   end
 end

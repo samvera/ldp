@@ -8,26 +8,18 @@ describe Ldp::Response do
   let(:mock_client) { double(Ldp::Client) }
 
   subject do
-    Ldp::Response.wrap mock_client, mock_response
-  end
-
-  describe ".wrap" do
-    it "should mixin Ldp::Response into the raw response" do
-      Ldp::Response.wrap(mock_client, mock_response)
-      expect(mock_response).to be_a_kind_of(Ldp::Response)
-    end
+    Ldp::Response.new mock_response
   end
 
   describe "#dup" do
     let(:mock_conn) { Faraday.new { |builder| builder.adapter :test, conn_stubs } }
     let(:client) { Ldp::Client.new mock_conn }
-    let(:raw_response) { client.get "a_container" }
     let(:conn_stubs) do
       Faraday::Adapter::Test::Stubs.new do |stub|
         stub.get('/a_container') { [200, {"Link" => link}, body] }
       end
     end
-    let(:response) { Ldp::Response.wrap mock_client, raw_response }
+    let(:response) { client.get "a_container" }
 
     subject { response.dup }
 
@@ -61,7 +53,7 @@ describe Ldp::Response do
   end
 
 
-  describe ".links" do
+  describe "#links" do
     it "should extract link headers with relations as a hash" do
       allow(mock_response).to receive(:headers).and_return(
         "Link" => [
@@ -71,7 +63,7 @@ describe Ldp::Response do
             "<vanilla-link>"
           ]
         )
-      h = Ldp::Response.links mock_response
+      h = subject.links
 
       expect(h['some-rel']).to include("xyz")
       expect(h['some-multi-rel']).to include("abc", "123")
@@ -80,21 +72,21 @@ describe Ldp::Response do
 
     it "should return an empty hash if no link headers are availabe" do
       allow(mock_response).to receive(:headers).and_return({})
-      h = Ldp::Response.links mock_response
+      h = subject.links
 
       expect(h).to be_empty
     end
 
   end
 
-  describe ".resource?" do
+  describe "#resource?" do
     it "should be a resource if a Link[rel=type] header asserts it is an ldp:resource" do
       allow(mock_response).to receive(:headers).and_return(
         "Link" => [
             "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\""
           ]
         )
-      expect(Ldp::Response.resource? mock_response).to be true
+      expect(subject.resource?).to be true
     end
   end
 
@@ -107,14 +99,6 @@ describe Ldp::Response do
 
         expect(graph).to have_subject(RDF::URI.new("info:a"))
         expect(graph).to have_statement RDF::Statement.new(RDF::URI.new("info:a"), RDF::URI.new("info:b"), RDF::URI.new("info:c"))
-      end
-    end
-
-    context "for a NonRDFSource" do
-      it "should parse the response body for an RDF graph" do
-        allow(mock_response).to receive(:body).and_return("<> <info:b> <info:c> .")
-        allow(mock_response).to receive(:headers).and_return(LDP_NON_RDF_SOURCE_HEADERS)
-        expect { subject.graph }.to raise_error Ldp::UnexpectedContentType
       end
     end
   end
@@ -185,6 +169,42 @@ describe Ldp::Response do
       allow(mock_response).to receive(:headers).and_return(LDP_RDF_RESOURCE_HEADERS)
       allow(mock_response).to receive(:env).and_return(:url => 'http://xyz/a')
       expect(subject.subject).to eq(RDF::URI.new("http://xyz/a"))
+    end
+  end
+
+  describe '#content_type' do
+    before do
+      allow(mock_response).to receive(:headers).and_return(
+        'Content-Type' => 'application/octet-stream'
+      )
+    end
+
+    it 'provides the content type from the response' do
+      expect(subject.content_type).to eq 'application/octet-stream'
+    end
+  end
+
+  describe '#content_length' do
+    before do
+      allow(mock_response).to receive(:headers).and_return(
+        'Content-Length' => '123'
+      )
+    end
+
+    it 'provides the content length from the response' do
+      expect(subject.content_length).to eq 123
+    end
+  end
+
+  describe '#content_disposition_filename' do
+    before do
+      allow(mock_response).to receive(:headers).and_return(
+        'Content-Disposition' => 'filename="xyz.txt";'
+      )
+    end
+
+    it 'provides the filename from the content disposition header' do
+      expect(subject.content_disposition_filename).to eq 'xyz.txt'
     end
   end
 end
