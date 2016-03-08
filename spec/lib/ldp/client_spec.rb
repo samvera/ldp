@@ -6,14 +6,6 @@ describe "Ldp::Client" do
     graph.dump(:ttl)
   end
 
-
-  let(:paginatedGraph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
-    graph << [RDF::URI.new("?firstPage"), RDF.type, RDF::Vocab::LDP.Page]
-    graph << [RDF::URI.new("?firstPage"), RDF::Vocab::LDP.page_of, RDF::URI.new("")]
-    graph.dump(:ttl)
-  end
-
   let(:simple_container_graph) do
     graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, RDF::Vocab::LDP.Container]
     graph.dump(:ttl)
