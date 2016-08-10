@@ -1,5 +1,7 @@
 require 'ldp/version'
-require 'linkeddata'
+require 'rdf/turtle'
+require 'json/ld'
+require 'rdf/isomorphic'
 require 'rdf/vocab/ldp'
 require 'logger'
 require 'singleton'
