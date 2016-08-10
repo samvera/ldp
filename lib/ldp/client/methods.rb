@@ -132,7 +132,7 @@ module Ldp::Client::Methods
           when 410
             Ldp::Gone.new(resp.body)
           when 412
-            Ldp::EtagMismatch.new(resp.body)
+            Ldp::PreconditionFailed.new(resp.body)
           else
             Ldp::HttpError.new("STATUS: #{resp.status} #{resp.body[0, 1000]}...")
           end
