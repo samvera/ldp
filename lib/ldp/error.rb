@@ -17,4 +17,6 @@ module Ldp
       @diff = diff
     end
   end
+
+  ETagMismatch = PreconditionFailed # deprecation
 end
