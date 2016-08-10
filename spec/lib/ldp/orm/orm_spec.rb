@@ -4,7 +4,7 @@ describe Ldp::Orm do
   subject { Ldp::Orm.new test_resource }
 
   let(:simple_graph) do
-    RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
+    RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello, world!"]
   end
 
   let(:conn_stubs) do
@@ -73,13 +73,13 @@ describe Ldp::Orm do
 
   describe "#value" do
     it "should provide a convenience method for retrieving values" do
-      expect(subject.value(RDF::DC.title).first.to_s).to eq "Hello, world!"
+      expect(subject.value(RDF::Vocab::DC.title).first.to_s).to eq "Hello, world!"
     end
   end
 
   describe "#reload" do
     before do
-      updated_graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello again, world!"]
+      updated_graph = RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello again, world!"]
       conn_stubs.get('/a_resource') {[200,
                                       {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\", <http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\"",
                                        "ETag" => "new-tag"},
@@ -87,9 +87,9 @@ describe Ldp::Orm do
     end
 
     it "loads the new values" do
-      old_value = subject.value(RDF::DC.title).first.to_s
+      old_value = subject.value(RDF::Vocab::DC.title).first.to_s
       reloaded = subject.reload
-      expect(reloaded.value(RDF::DC.title).first.to_s).not_to eq old_value
+      expect(reloaded.value(RDF::Vocab::DC.title).first.to_s).not_to eq old_value
     end
 
     it "uses the new ETag" do
