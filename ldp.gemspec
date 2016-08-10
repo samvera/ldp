@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faraday"
   spec.add_dependency "rdf",            ">= 1.1"
   spec.add_dependency "rdf-turtle"
-  spec.add_dependency "rdf-vocab"
+  spec.add_dependency "rdf-vocab",      ">= 0.8"
   spec.add_dependency "rdf-isomorphic"
   spec.add_dependency "json-ld"
   spec.add_dependency "http_logger"
