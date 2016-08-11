@@ -2,7 +2,7 @@ require 'spec_helper'
 describe "Ldp::Client" do
 
   let(:simple_graph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::DC.title, "Hello, world!"]
+    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello, world!"]
     graph.dump(:ttl)
   end
 

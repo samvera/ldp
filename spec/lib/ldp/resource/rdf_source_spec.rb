@@ -3,7 +3,7 @@ require 'spec_helper'
 
 describe Ldp::Resource::RdfSource do
   let(:simple_graph) do
-    RDF::Graph.new << [RDF::URI.new(), RDF::DC.title, "Hello, world!"]
+    RDF::Graph.new << [RDF::URI.new(), RDF::Vocab::DC.title, "Hello, world!"]
   end
 
   let(:simple_graph_source) do
