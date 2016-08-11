@@ -236,7 +236,7 @@ describe "Ldp::Client" do
       end
 
       it "checks for 412 errors" do
-        expect { subject.put "mismatch_resource", "some-payload" }.to raise_error Ldp::EtagMismatch
+        expect { subject.put "mismatch_resource", "some-payload" }.to raise_error Ldp::PreconditionFailed
       end
     end
 
