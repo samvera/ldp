@@ -1,5 +1,4 @@
 require 'rdf/turtle'
-require 'rdf/rdfxml'
 module Ldp
   class Resource::RdfSource < Ldp::Resource
 
