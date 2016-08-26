@@ -4,8 +4,8 @@ describe Ldp::Response do
   LDP_RDF_RESOURCE_HEADERS = { "Link" => "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\", <#{RDF::Vocab::LDP.DirectContainer}>;rel=\"type\""}
   LDP_NON_RDF_SOURCE_HEADERS = { "Link" => "<#{RDF::Vocab::LDP.Resource}>;rel=\"type\", <#{RDF::Vocab::LDP.NonRDFSource}>;rel=\"type\""}
 
-  let(:mock_response) { double("mock response", headers: {}, env: { url: "info:a" }) }
-  let(:mock_client) { double(Ldp::Client) }
+  let(:mock_response) { instance_double(Faraday::Response, headers: {}, env: { url: "info:a" }) }
+  let(:mock_client) { instance_double(Ldp::Client) }
 
   subject do
     Ldp::Response.new mock_response

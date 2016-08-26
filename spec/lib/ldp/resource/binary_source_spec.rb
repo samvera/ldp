@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Ldp::Resource::BinarySource do
-  let(:client) { double }
+  let(:client) { instance_double(Ldp::Client) }
   let(:uri) { 'http://example.com/foo/bar' }
   let(:content) { 'somecontent' }
   subject { described_class.new(client, uri, content) }
@@ -14,7 +14,7 @@ describe Ldp::Resource::BinarySource do
   describe '#described_by' do
     context 'without a description' do
       before do
-        allow(client).to receive(:head).and_return(double(links: { }))
+        allow(client).to receive(:head).and_return(instance_double(Ldp::Response, links: { }))
       end
 
       it 'retrieves the description object' do
@@ -24,7 +24,7 @@ describe Ldp::Resource::BinarySource do
 
     context 'with a description' do
       before do
-        allow(client).to receive(:head).and_return(double(links: { 'describedby' => ['http://example.com/foo/bar/desc']}))
+        allow(client).to receive(:head).and_return(instance_double(Ldp::Response, links: { 'describedby' => ['http://example.com/foo/bar/desc']}))
         allow(client).to receive(:find_or_initialize).with('http://example.com/foo/bar/desc').and_return(desc)
       end
 
@@ -35,5 +35,4 @@ describe Ldp::Resource::BinarySource do
       end
     end
   end
-
 end
