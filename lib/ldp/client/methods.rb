@@ -115,7 +115,7 @@ module Ldp::Client::Methods
 
   def check_for_errors resp
     resp.tap do |resp|
-      unless resp.success?
+      unless resp.status < 400
         raise case resp.status
           when 400
             if resp.env.method == :head

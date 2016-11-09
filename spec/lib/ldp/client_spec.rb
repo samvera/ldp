@@ -29,6 +29,10 @@ describe "Ldp::Client" do
       stub.put("/forbidden_resource") { [403, {}, ''] }
       stub.put("/conflict_resource") { [409, {}, ''] }
       stub.get("/deleted_resource") { [410, {}, 'Gone'] }
+      stub.head("/temporary_redirect1") { [302, {"Location" => "http://example.com/new"}] }
+      stub.head("/temporary_redirect2") { [307, {"Location" => "http://example.com/new"}] }
+      stub.head("/permanent_redirect1") { [301, {"Location" => "http://example.com/new"}] }
+      stub.head("/permanent_redirect2") { [308, {"Location" => "http://example.com/new"}] }
     end
   end
 
@@ -276,6 +280,17 @@ describe "Ldp::Client" do
       resource = subject.find_or_initialize "a_binary_resource"
       expect(resource).to be_a_kind_of(Ldp::Resource::BinarySource)
     end
+  end
 
+  describe "head" do
+    it "treats temporary redirects as successful" do
+      expect { subject.head "temporary_redirect1" }.not_to raise_error
+      expect { subject.head "temporary_redirect2" }.not_to raise_error
+    end
+
+    it "treats permanent redirects as successful" do
+      expect { subject.head "permanent_redirect1" }.not_to raise_error
+      expect { subject.head "permanent_redirect2" }.not_to raise_error
+    end
   end
 end
