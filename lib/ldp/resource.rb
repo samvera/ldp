@@ -66,7 +66,7 @@ module Ldp
     # Delete the resource
     def delete
       client.delete subject do |req|
-        req.headers['If-Match'] = get.etag if retrieved_content?
+        req.headers['If-Unmodified-Since'] = get.last_modified if retrieved_content?
       end
     end
 
@@ -95,7 +95,7 @@ module Ldp
     def update new_content = nil
       new_content ||= content
       resp = client.put subject, new_content do |req|
-        req.headers['If-Match'] = get.etag if retrieved_content?
+        req.headers['If-Unmodified-Since'] = get.last_modified if retrieved_content?
         yield req if block_given?
       end
       update_cached_get(resp) if retrieved_content?
