@@ -27,7 +27,7 @@ module Ldp
     ##
     # Get the graph subject as a URI
     def subject_uri
-      @subject_uri ||= RDF::URI.new subject
+      @subject_uri ||= RDF::URI(subject)
     end
 
     ##
