@@ -9,6 +9,6 @@ env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
 rvm:
-  - 2.3.0
-  - 2.2.4
+  - 2.4.0
+  - 2.3.3
   - jruby-9.0.5.0
