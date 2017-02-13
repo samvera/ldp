@@ -1,5 +1,6 @@
 require 'stringio'
 require 'spec_helper'
+require 'rdf/vocab/dc'
 
 describe Ldp::Resource::RdfSource do
   let(:simple_graph) do
@@ -34,7 +35,18 @@ describe Ldp::Resource::RdfSource do
 
 
   describe "#create" do
-    subject { Ldp::Resource::RdfSource.new mock_client, nil }
+    subject { rdf_source }
+    let(:rdf_source) { Ldp::Resource::RdfSource.new mock_client, nil }
+
+    context "if the resource already exists" do
+      subject { rdf_source.create }
+      before do
+        allow(rdf_source).to receive(:new?).and_return(false)
+      end
+      it "raises an error" do
+        expect { subject }.to raise_error Ldp::Conflict
+      end
+    end
 
     it "should return a new resource" do
       created_resource = subject.create
