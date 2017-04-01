@@ -1,6 +1,9 @@
 # Ldp.rb
 
 [![Build Status](https://travis-ci.org/projecthydra/ldp.png?branch=master)](https://travis-ci.org/projecthydra/ldp)
+[![Version](https://badge.fury.io/rb/ldp.png)](http://badge.fury.io/rb/ldp)
+[![Dependencies](https://gemnasium.com/projecthydra/ldp.png)](https://gemnasium.com/projecthydra/ldp)
+[![Coverage Status](https://coveralls.io/repos/github/projecthydra/ldp/badge.svg?branch=master)](https://coveralls.io/github/projecthydra/ldp?branch=master)
 
 Linked Data Platform client library for Ruby
 
