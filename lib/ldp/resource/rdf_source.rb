@@ -49,14 +49,6 @@ module Ldp
       @response_graph ||= response_as_graph(get)
     end
 
-    # Get the body and ensure it's UTF-8 encoded. Since Fedora 9.3 isn't
-    # returning a charset, then Net::HTTP is just returning ASCII-8BIT
-    # See https://github.com/ruby-rdf/rdf-turtle/issues/13
-    # See https://jira.duraspace.org/browse/FCREPO-1750
-    def body
-      body.force_encoding('utf-8')
-    end
-
     protected
 
     def interaction_model
