@@ -27,7 +27,17 @@ module Ldp
     end
 
     def graph
-      @graph ||= new? ? build_empty_graph : filtered_graph(response_graph)
+      @graph ||= begin
+                   if subject.nil?
+                     build_empty_graph
+                   else
+                     filtered_graph(response_graph)
+                   end
+                 rescue Ldp::NotFound
+                   # This is an optimization that lets us avoid doing HEAD + GET
+                   # when the object exists. We just need to handle the 404 case
+                   build_empty_graph
+                 end
     end
 
     def build_empty_graph

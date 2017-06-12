@@ -17,6 +17,7 @@ describe Ldp::Resource::RdfSource do
       stub.post("/") { [201]}
       stub.put("/abs_url_object") { [201]}
       stub.head("/abs_url_object") {[404]}
+      stub.get("/abs_url_object") {[404]}
       stub.head("/existing_object") {[200, {'Content-Type'=>'text/turtle'}]}
       stub.get("/existing_object") {[200, {'Content-Type'=>'text/turtle'}, simple_graph_source]}
     end
@@ -102,7 +103,7 @@ describe Ldp::Resource::RdfSource do
     end
     context 'for an existing object' do
       subject { Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/existing_object" }
-      it do 
+      it do
         expect(subject.graph.size).to eql(1)
       end
     end
