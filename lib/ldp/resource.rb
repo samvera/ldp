@@ -6,7 +6,7 @@ module Ldp
     attr_reader :client, :subject
     attr_accessor :content
 
-    def self.for(client, subject, response = nil)
+    def self.for(client, subject, response)
       case
       when response.container?
         Ldp::Container.for client, subject, response
