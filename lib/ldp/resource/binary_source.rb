@@ -2,16 +2,21 @@ module Ldp
   class Resource::BinarySource < Ldp::Resource
     attr_accessor :content
 
+    # @param client [Ldp::Client]
+    # @param subject [String] the URI for the resource
+    # @param content_or_response [String,Ldp::Response]
+    # @param base_path [String] ('')
     def initialize client, subject, content_or_response = nil, base_path = ''
       super
 
       case content_or_response
-      when Faraday::Response
+      when Ldp::Response
       else
         @content = content_or_response
       end
     end
 
+    # @return [Ldp::Response]
     def content
       @content ||= get.body
     end

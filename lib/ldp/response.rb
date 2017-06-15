@@ -10,6 +10,7 @@ module Ldp
 
     attr_writer :etag, :last_modified
 
+    # @param response [Faraday::Response]
     def initialize(response)
       @response = response
     end
