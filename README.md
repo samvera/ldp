@@ -1,9 +1,9 @@
 # Ldp.rb
 
-[![Build Status](https://travis-ci.org/projecthydra/ldp.png?branch=master)](https://travis-ci.org/projecthydra/ldp)
+[![Build Status](https://travis-ci.org/samvera/ldp.png?branch=master)](https://travis-ci.org/samvera/ldp)
 [![Version](https://badge.fury.io/rb/ldp.png)](http://badge.fury.io/rb/ldp)
-[![Dependencies](https://gemnasium.com/projecthydra/ldp.png)](https://gemnasium.com/projecthydra/ldp)
-[![Coverage Status](https://coveralls.io/repos/github/projecthydra/ldp/badge.svg?branch=master)](https://coveralls.io/github/projecthydra/ldp?branch=master)
+[![Dependencies](https://gemnasium.com/samvera/ldp.png)](https://gemnasium.com/samvera/ldp)
+[![Coverage Status](https://coveralls.io/repos/github/samvera/ldp/badge.svg?branch=master)](https://coveralls.io/github/samvera/ldp?branch=master)
 
 Linked Data Platform client library for Ruby
 
@@ -42,8 +42,8 @@ orm.save
 
 ### Fedora Commons notes
 Due to some discrepancies with alpha version of Fedora Commons, you may need to do some things differently:
-* [Can't load resources from Fedora 4](https://github.com/projecthydra/ldp/issues/1)
-* [orm.save with an rdf:type doesn't work with Fedora 4.0.0-alpha-3](https://github.com/projecthydra/ldp/issues/2)
+* [Can't load resources from Fedora 4](https://github.com/samvera/ldp/issues/1)
+* [orm.save with an rdf:type doesn't work with Fedora 4.0.0-alpha-3](https://github.com/samvera/ldp/issues/2)
 
 ## Contributing
 
@@ -53,8 +53,8 @@ Due to some discrepancies with alpha version of Fedora Commons, you may need to 
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-# Project Hydra
+# Samvera
 This software has been developed by and is brought to you by the Hydra community.  Learn more at the
-[Project Hydra website](http://projecthydra.org)
+[Samvera website](http://samvera.org)
 
-![Project Hydra Logo](https://github.com/uvalib/libra-oa/blob/a6564a9e5c13b7873dc883367f5e307bf715d6cf/public/images/powered_by_hydra.png?raw=true)
+![Samvera Logo](https://wiki.duraspace.org/download/thumbnails/87459292/samvera-fall-font2-200w.png?version=1&modificationDate=1498550535816&api=v2)
