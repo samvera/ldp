@@ -199,12 +199,14 @@ describe Ldp::Response do
   describe '#content_disposition_filename' do
     before do
       allow(mock_response).to receive(:headers).and_return(
-        'Content-Disposition' => 'filename="xyz.txt";'
+        { 'Content-Disposition' => 'filename="xyz.txt";' },
+        { 'Content-Disposition' => 'attachment; filename=xyz.txt' },
+        { 'Content-Disposition' => 'attachment; filename="xyz.txt"; size="12345"' },
       )
     end
 
     it 'provides the filename from the content disposition header' do
-      expect(subject.content_disposition_filename).to eq 'xyz.txt'
+      3.times { expect(subject.content_disposition_filename).to eq 'xyz.txt' }
     end
   end
 end
