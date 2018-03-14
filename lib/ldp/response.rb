@@ -208,7 +208,7 @@ module Ldp
     def content_disposition_attributes
       parts = headers['Content-Disposition'].split(/;\s*/).collect { |entry| entry.split(/\s*=\s*/) }
       entries = parts.collect do |part|
-        value = part[1].respond_to?(:sub) ? part[1].sub(%r{^"(.+)"$}, '\1') : part[1]
+        value = part[1].respond_to?(:sub) ? part[1].sub(%r{^"(.*)"$}, '\1') : part[1]
         [part[0], value]
       end
       Hash[entries]

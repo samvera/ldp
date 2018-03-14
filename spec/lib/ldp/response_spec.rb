@@ -202,11 +202,13 @@ describe Ldp::Response do
         { 'Content-Disposition' => 'filename="xyz.txt";' },
         { 'Content-Disposition' => 'attachment; filename=xyz.txt' },
         { 'Content-Disposition' => 'attachment; filename="xyz.txt"; size="12345"' },
+        { 'Content-Disposition' => 'attachment; filename=""; size="12345"' },
       )
     end
 
     it 'provides the filename from the content disposition header' do
       3.times { expect(subject.content_disposition_filename).to eq 'xyz.txt' }
+      expect(subject.content_disposition_filename).to eq ''
     end
   end
 end
