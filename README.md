@@ -1,10 +1,33 @@
 # Ldp.rb
 
+Code:
 [![Build Status](https://travis-ci.org/samvera/ldp.png?branch=master)](https://travis-ci.org/samvera/ldp)
 [![Version](https://badge.fury.io/rb/ldp.png)](http://badge.fury.io/rb/ldp)
 [![Coverage Status](https://coveralls.io/repos/github/samvera/ldp/badge.svg?branch=master)](https://coveralls.io/github/samvera/ldp?branch=master)
 
+Docs:
+[![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
+[![Apache 2.0 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE.txt)
+
+Jump In: [![Slack Status](http://slack.samvera.org/badge.svg)](http://slack.samvera.org/)
+
+# What is ldp?
+
 Linked Data Platform client library for Ruby
+
+## Product Owner & Maintenance
+
+**ldp** is a Core Component of the Samvera community. The documentation for
+what this means can be found
+[here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
+
+### Product Owner
+
+[carrickr](https://github.com/carrickr)
+
+# Help
+
+The Samvera community is here to help. Please see our [support guide](./SUPPORT.md).
 
 ## Installation
 
@@ -38,19 +61,6 @@ orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, 'a new title'])
 # save changes
 orm.save
 ```
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
-
-# Help
-
-The Samvera community is here to help. Please see our [support guide](./SUPPORT.md).
-
 # Acknowledgments
 This software has been developed by and is brought to you by the Samvera community.  Learn more at the
 [Samvera website](http://samvera.org)
