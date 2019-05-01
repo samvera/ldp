@@ -23,7 +23,7 @@ what this means can be found
 
 ### Product Owner
 
-[carrickr](https://github.com/carrickr)
+[randalldfloyd](https://github.com/randalldfloyd)
 
 # Help
 
