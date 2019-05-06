@@ -1,7 +1,7 @@
 # Ldp.rb
 
 Code:
-[![Build Status](https://travis-ci.org/samvera/ldp.png?branch=master)](https://travis-ci.org/samvera/ldp)
+[![Build Status](https://circleci.com/gh/samvera/ldp.svg?style=svg)](https://circleci.com/gh/samvera/ldp)
 [![Version](https://badge.fury.io/rb/ldp.png)](http://badge.fury.io/rb/ldp)
 [![Coverage Status](https://coveralls.io/repos/github/samvera/ldp/badge.svg?branch=master)](https://coveralls.io/github/samvera/ldp?branch=master)
 
