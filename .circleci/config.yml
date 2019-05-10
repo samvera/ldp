@@ -6,7 +6,10 @@ jobs:
     parameters:
       ruby_version:
         type: string
-        default: 2.5.5
+        default: 2.6.3
+      rails_version:
+        type: string
+        default: 5.2.3
       bundler_version:
         type: string
         default: 2.0.1
@@ -17,6 +20,8 @@ jobs:
       name: 'samvera/ruby'
       ruby_version: << parameters.ruby_version >>
       ruby_type: << parameters.ruby_type >>
+    environment:
+      RAILS_VERSION: << parameters.rails_version >>
     working_directory: ~/project
     steps:
       - run: sudo apt-get update && sudo apt-get install libgmp-dev
@@ -34,19 +39,41 @@ workflows:
   ci:
     jobs:
       - bundle_and_test:
-          name: "ruby2-6-3"
+          name: "ruby2-6_rails5-2"
           ruby_version: "2.6.3"
       - bundle_and_test:
-          name: "ruby2-5-5"
+          name: "ruby2-5_rails5-2"
           ruby_version: "2.5.5"
       - bundle_and_test:
-          name: "ruby2-4-6"
+          name: "ruby2-4_rails5-2"
           ruby_version: "2.4.6"
       - bundle_and_test:
-          name: "jruby9-2"
+          name: "jruby9-2_rails5-2"
           ruby_version: "9.2.0.0"
           ruby_type: "jruby"
       - bundle_and_test:
-          name: "jruby9-1"
+          name: "jruby9-1_rails5-2"
           ruby_version: "9.1.17.0"
           ruby_type: "jruby"
+      - bundle_and_test:
+          name: "ruby2-6_rails5-1"
+          ruby_version: "2.6.3"
+          rails_version: "5.1.7"
+      - bundle_and_test:
+          name: "ruby2-5_rails5-1"
+          ruby_version: "2.5.5"
+          rails_version: "5.1.7"
+      - bundle_and_test:
+          name: "ruby2-4_rails5-1"
+          ruby_version: "2.4.6"
+          rails_version: "5.1.7"
+      - bundle_and_test:
+          name: "jruby9-2_rails5-1"
+          ruby_version: "9.2.0.0"
+          ruby_type: "jruby"
+          rails_version: "5.1.7"
+      - bundle_and_test:
+          name: "jruby9-1_rails5-1"
+          ruby_version: "9.1.17.0"
+          ruby_type: "jruby"
+          rails_version: "5.1.7"
