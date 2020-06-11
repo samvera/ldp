@@ -1,0 +1,26 @@
+inherit_from: .rubocop_todo.yml
+
+inherit_gem:
+  bixby: bixby_default.yml
+
+AllCops:
+  TargetRubyVersion: 2.6
+
+Bundler/DuplicatedGem:
+  Exclude:
+    - 'Gemfile'
+
+Metrics/BlockLength:
+  Exclude:
+    - ldp.gemspec
+
+Naming/FileName:
+  Exclude:
+    - 'Gemfile'
+
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/lib/integration/integration_spec.rb'
+
+Style/Documentation:
+  Enabled: false
