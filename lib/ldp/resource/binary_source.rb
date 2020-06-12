@@ -30,7 +30,7 @@ module Ldp
     # Override inspect so that `content` is never shown. It is typically too big to be helpful
     def inspect
       string = "#<#{self.class.name}:#{self.object_id} "
-      fields = [:subject].map{|field| "#{field}=\"#{self.send(field)}\""}
+      fields = [:subject].map { |field| "#{field}=\"#{self.send(field)}\"" }
       string << fields.join(", ") << ">"
     end
 

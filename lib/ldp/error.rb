@@ -1,6 +1,6 @@
 module Ldp
   class Error < StandardError; end
-  
+
   class HttpError          < RuntimeError; end
   class BadRequest         < HttpError; end # 400
   class NotFound           < HttpError; end # 404

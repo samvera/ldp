@@ -79,10 +79,10 @@ module Ldp
     # Get the subject for the response
     def subject
       @subject ||= if has_page?
-        graph.first_object [page_subject, RDF::Vocab::LDP.pageOf, nil]
-      else
-        page_subject
-      end
+                     graph.first_object [page_subject, RDF::Vocab::LDP.pageOf, nil]
+                   else
+                     page_subject
+                   end
     end
 
     ##

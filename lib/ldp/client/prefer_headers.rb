@@ -2,7 +2,7 @@ module Ldp
   class PreferHeaders
     attr_reader :headers_string
 
-    def initialize(headers_string="")
+    def initialize(headers_string = "")
       @headers_string = headers_string
     end
 
@@ -54,11 +54,11 @@ module Ldp
     end
 
     def options
-      headers_string.gsub('"',"").
-        split(";").
-        map{|x| x.strip.split("=")}.
-        map{|x| { x[0] => x[1].split(" ") }}.
-        inject({}, &:merge)
+      headers_string.gsub('"', "")
+                    .split(";")
+                    .map { |x| x.strip.split("=") }
+                    .map { |x| { x[0] => x[1].split(" ") } }
+                    .inject({}, &:merge)
     end
   end
 end

@@ -57,8 +57,8 @@ module Ldp
     def head
       @head ||= begin
         @get || client.head(subject)
-      rescue Ldp::NotFound
-        None
+                rescue Ldp::NotFound
+                  None
       end
     end
 
@@ -130,6 +130,5 @@ module Ldp
     def interaction_model
       nil
     end
-
   end
 end

@@ -1,6 +1,5 @@
 module Ldp
   class Orm
-
     attr_reader :resource
     attr_reader :last_response
 

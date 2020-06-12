@@ -17,13 +17,11 @@ rescue Ldp::NotFound
 end
 
 do_help = lambda do |x|
-
   x.command 'help' do
     run do |opts, args|
       puts opts.help
     end
   end
-
 end
 
 Slop.parse do
@@ -34,7 +32,7 @@ Slop.parse do
   end
 
   on :host=, "Host"
-  
+
   do_help.call(self)
 
   command 'get' do
@@ -92,7 +90,7 @@ Slop.parse do
     on :host=, "Host"
     do_help.call(self)
 
-    run do |opts, (path,file)|
+    run do |opts, (path, file)|
       with_error_handling do
         host = opts[:host] || ENV['LDP_HOST']
         if file.nil?
@@ -112,7 +110,7 @@ Slop.parse do
     on :host=, "Host"
     do_help.call(self)
 
-    run do |opts, (path,file)|
+    run do |opts, (path, file)|
       with_error_handling do
         host = opts[:host] || ENV['LDP_HOST']
         if file.nil?

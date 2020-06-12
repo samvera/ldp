@@ -2,7 +2,6 @@
 # LDP client for presenting an ORM on top of an LDP resource
 module Ldp
   class Client
-
     require 'ldp/client/methods'
     require 'ldp/client/prefer_headers'
     include Ldp::Client::Methods
@@ -11,14 +10,14 @@ module Ldp
 
     def initialize(*args)
       http_client, options = if args.length == 2
-        args
-      elsif args.length == 1 && args.first.is_a?(Faraday::Connection)
-        [args.first, {}]
-      elsif args.length == 1
-        [nil, args.first]
-      else
-        raise ArgumentError
-      end
+                               args
+                             elsif args.length == 1 && args.first.is_a?(Faraday::Connection)
+                               [args.first, {}]
+                             elsif args.length == 1
+                               [nil, args.first]
+                             else
+                               raise ArgumentError
+                             end
 
       @options = options
 
