@@ -51,11 +51,6 @@ workflows:
           ruby_version: 2.5.7
           rails_version: 6.0.2
       - bundle_and_test:
-          name: jruby9-2_rails6-0
-          ruby_type: jruby
-          ruby_version: 9.2.9.0
-          rails_version: 6.0.2
-      - bundle_and_test:
           name: ruby2-7_rails5-2
           ruby_version: 2.7.0
           rails_version: 5.2.4
@@ -70,11 +65,6 @@ workflows:
       - bundle_and_test:
           name: ruby2-4_rails5-2
           ruby_version: 2.4.6
-          rails_version: 5.2.4
-      - bundle_and_test:
-          name: jruby9-2_rails5-2
-          ruby_type: jruby
-          ruby_version: 9.2.9.0
           rails_version: 5.2.4
       - bundle_and_test:
           name: ruby2-7_rails5-1
@@ -92,9 +82,3 @@ workflows:
           name: ruby2-4_rails5-1
           ruby_version: 2.4.6
           rails_version: 5.1.7
-      - bundle_and_test:
-          name: jruby9-2_rails5-1
-          ruby_type: jruby
-          ruby_version: 9.2.9.0
-          rails_version: 5.1.7
-
