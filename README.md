@@ -61,6 +61,28 @@ orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, 'a new title'])
 # save changes
 orm.save
 ```
+## Testing:
+
+- Set Rails version you want to test against. For example:
+
+  - `export RAILS_VERSION=5.1.4`
+
+- Ensure that the correct version of Rails is installed: `bundle update`
+
+- And run tests: `bundle exec rake rspec`
+
+## Releasing
+
+1. `bundle install`
+2. Increase the version number in `lib/ldp/version.rb`
+3. Increase the same version number in `.github_changelog_generator`
+4. Update `CHANGELOG.md` by running this command:
+  ```
+  github_changelog_generator --user samvera --project ldp --token YOUR_GITHUB_TOKEN_HERE
+  ```
+5. Commit these changes to the master branch
+6. Run `rake release`
+
 # Acknowledgments
 This software has been developed by and is brought to you by the Samvera community.  Learn more at the
 [Samvera website](http://samvera.org)

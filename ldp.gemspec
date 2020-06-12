@@ -35,4 +35,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "rspec_junit_formatter"
   spec.add_development_dependency 'bixby', '~> 3.0.0'
+  spec.add_development_dependency 'github_changelog_generator'
 end
