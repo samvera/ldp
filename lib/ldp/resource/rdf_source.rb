@@ -77,12 +77,6 @@ module Ldp
     # @param [Faraday::Response] graph query response
     # @return [RDF::Graph]
     def response_as_graph(resp)
-      if graph_class == RDF::Graph
-        resp.graph
-      else
-        graph_class.new(data: resp.graph.data)
-      end
-    rescue ArgumentError
       build_empty_graph << resp.graph
     end
 
