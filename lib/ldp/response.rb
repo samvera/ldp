@@ -105,9 +105,7 @@ module Ldp
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
       @graph ||= begin
-        graph = RDF::Graph.new
-        each_statement { |s| graph << s }
-        graph
+        RDF::Graph.new << reader
       end
     end
 
@@ -115,6 +113,8 @@ module Ldp
       reader_for_content_type.new(body, base_uri: page_subject, &block)
     end
 
+    ##
+    # @deprecated use {#graph} instead
     def each_statement(&block)
       reader do |reader|
         reader.each_statement(&block)
@@ -155,17 +155,9 @@ module Ldp
     # Statements about the page
     def page
       @page_graph ||= begin
-        g = RDF::Graph.new
-
-        if resource?
-          res = graph.query RDF::Statement.new(page_subject, nil, nil)
-
-          res.each_statement do |s|
-            g << s
-          end
-        end
-
-        g
+        page_graph = RDF::Graph.new
+        page_graph << graph.query([page_subject, nil, nil]) if resource?
+        page_graph
       end
     end
 

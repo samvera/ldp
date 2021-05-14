@@ -70,7 +70,7 @@ module Ldp
     # @param [Faraday::Response] graph query response
     # @return [RDF::Graph]
     def response_as_graph(resp)
-      build_empty_graph << resp.reader
+      resp.graph
     end
 
     ##
