@@ -79,15 +79,10 @@ module Ldp
     def filtered_graph(original_graph)
       contains_statements = original_graph.query(predicate: RDF::Vocab::LDP.contains)
 
-      # we want to scope this graph to just statements about this model, not contained relations
-      return original_graph if contains_statements.empty?
-      graph_without_inlined_resources(original_graph, contains_statements.objects)
-    end
-
-    def graph_without_inlined_resources(original_graph, inlined_resources)
-      inlined_resources.each do |contained_uri|
+      contains_statements.each_object do |contained_uri|
         original_graph.delete(original_graph.query(subject: contained_uri))
       end
+
       original_graph
     end
   end
