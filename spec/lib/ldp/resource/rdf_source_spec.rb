@@ -107,6 +107,24 @@ describe Ldp::Resource::RdfSource do
         expect(subject.graph.size).to eql(1)
       end
     end
+
+    context 'with inlined resources' do
+      subject { Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/existing_object" }
+
+      let(:simple_graph) do
+        graph = RDF::Graph.new
+        graph << [RDF::URI.new(), RDF::Vocab::DC.title, "Hello, world!"]
+        graph << [RDF::URI.new(), RDF::Vocab::LDP.contains, contained_uri]
+        graph << [contained_uri, RDF::Vocab::DC.title, "delete me"]
+      end
+
+      let(:contained_uri) { RDF::URI.new('http://example.com/contained') }
+
+      it do
+        expect(subject.graph.subjects)
+          .to contain_exactly(RDF::URI('http://my.ldp.server/existing_object'))
+      end
+    end
   end
 
   context "When graph_class is overridden" do

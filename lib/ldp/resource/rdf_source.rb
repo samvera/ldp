@@ -81,20 +81,14 @@ module Ldp
 
       # we want to scope this graph to just statements about this model, not contained relations
       return original_graph if contains_statements.empty?
-
       graph_without_inlined_resources(original_graph, contains_statements.objects)
     end
 
     def graph_without_inlined_resources(original_graph, inlined_resources)
-      new_graph = build_empty_graph
-
-      original_graph.each_statement do |s|
-        unless inlined_resources.include? s.subject
-          new_graph << s
-        end
+      inlined_resources.each do |contained_uri|
+        original_graph.delete(original_graph.query(subject: contained_uri))
       end
-
-      new_graph
+      original_graph
     end
   end
 end
