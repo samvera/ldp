@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.3](https://github.com/samvera/ldp/tree/1.0.1) (2021-05-14)
+
+[Full Changelog](https://github.com/samvera/ldp/compare/v1.0.1...1.0.3)
+
+Walks back a small portion of the optimizations in 1.0.2 to support a frequently
+used extend-and-override pattern.
+
+**Merged pull requests:**
+
+- yield to ActiveFedora's intrusive overrides [#122](https://github.com/samvera/ldp/pull/122)
+
 ## [1.0.2](https://github.com/samvera/ldp/tree/1.0.1) (2021-05-14)
 
 [Full Changelog](https://github.com/samvera/ldp/compare/v1.0.1...1.0.2)
