@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.2](https://github.com/samvera/ldp/tree/1.0.1) (2021-05-14)
+
+[Full Changelog](https://github.com/samvera/ldp/compare/v1.0.1...1.0.2)
+
+This release includes major performance improvements and memory optimizations.
+
+These optimizations replace linear complexity data access operations with
+constant-time, equivalents. They also prevent repeated wholesale copying of
+(potentially large) RDF graphs in-memory when deserializing LDP responses.
+
+This should result in broad performance improvements in all cases. The biggest
+impact will be on RDF Sources with many `ldp:contains` relationships.
+
+**Merged pull requests:**
+
+- don't loop over statements manually; use the library [#118](https://github.com/samvera/ldp/pull/118)
+- optimize subject filtering [#119](https://github.com/samvera/ldp/pull/119)
+- Adding CONTRIBUTING.md This was uploaded via automation. [#116](https://github.com/samvera/ldp/pull/116)
+- fix a regression in handling for custom graph classes in `RDFSource` [#120](https://github.com/samvera/ldp/pull/120)
+
 ## [1.0.1](https://github.com/samvera/ldp/tree/1.0.1) (2020-06-12)
 
 [Full Changelog](https://github.com/samvera/ldp/compare/v1.0.1-beta1...1.0.1)
