@@ -7,7 +7,7 @@
 This release includes major performance improvements and memory optimizations.
 
 These optimizations replace linear complexity data access operations with
-constant-time, equivalents. They also prevent repeated wholesale copying of
+constant-time equivalents. They also prevent repeated wholesale copying of
 (potentially large) RDF graphs in-memory when deserializing LDP responses.
 
 This should result in broad performance improvements in all cases. The biggest
