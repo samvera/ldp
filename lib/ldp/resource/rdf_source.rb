@@ -67,10 +67,23 @@ module Ldp
     private
 
     ##
+    # @note tries to avoid doing a large scale copy of the {RDF::Repository}
+    #   data structure by using the existing {Ldp::Response#graph} if
+    #   {#graph_class} is {RDF::Graph}. otherwise, it tries to instantiate a
+    #   new graph projected over the same underlying {RDF::Graph#data}. finally,
+    #   if {#graph_class}'s initailizer doesn't accept a `data:` parameter, it
+    #   shovels {Ldp::Response#graph} into a new object of that class.
+    #
     # @param [Faraday::Response] graph query response
     # @return [RDF::Graph]
     def response_as_graph(resp)
-      resp.graph
+      if graph_class == RDF::Graph
+        resp.graph
+      else
+        graph_class.new(data: resp.graph.data)
+      end
+    rescue ArgumentError
+      build_empty_graph << resp.graph
     end
 
     ##

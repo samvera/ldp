@@ -148,5 +148,14 @@ describe Ldp::Resource::RdfSource do
     it "should use the specified class" do
       expect(subject.graph).to be_a SpecialGraph
     end
+
+    context "with a response body" do
+      subject { SpecialResource.new mock_client, "http://my.ldp.server/existing_object" }
+
+
+      it "should use the specified class" do
+        expect(subject.graph).to be_a SpecialGraph
+      end
+    end
   end
 end
