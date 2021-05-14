@@ -77,14 +77,12 @@ module Ldp
     # @param [RDF::Graph] original_graph The graph returned by the LDP server
     # @return [RDF::Graph] A graph stripped of any inlined resources present in the original
     def filtered_graph(original_graph)
-      inlined_resources = original_graph.query(predicate: RDF::Vocab::LDP.contains).map { |x| x.object }
+      contains_statements = original_graph.query(predicate: RDF::Vocab::LDP.contains)
 
       # we want to scope this graph to just statements about this model, not contained relations
-      if inlined_resources.empty?
-        original_graph
-      else
-        graph_without_inlined_resources(original_graph, inlined_resources)
-      end
+      return original_graph if contains_statements.empty?
+
+      graph_without_inlined_resources(original_graph, contains_statements.objects)
     end
 
     def graph_without_inlined_resources(original_graph, inlined_resources)
