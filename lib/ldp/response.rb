@@ -193,7 +193,7 @@ module Ldp
 
     def content_disposition_filename
       filename = content_disposition_attributes['filename']
-      URI.decode(filename) if filename
+      Addressable::URI.escape(filename) if filename
     end
 
     private
