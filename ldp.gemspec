@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^spec/})
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "addressable"
   spec.add_dependency "faraday"
   spec.add_dependency "rdf",            ">= 1.1"
   spec.add_dependency "rdf-turtle"

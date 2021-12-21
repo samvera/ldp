@@ -17,3 +17,5 @@ test/version_tmp
 tmp
 .storage
 /spec/examples.txt
+vendor
+.*.swp

@@ -1,3 +1,4 @@
+require 'addressable/uri'
 require 'ldp/version'
 require 'rdf/turtle'
 require 'json/ld'

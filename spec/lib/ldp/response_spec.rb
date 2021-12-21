@@ -197,18 +197,37 @@ describe Ldp::Response do
   end
 
   describe '#content_disposition_filename' do
-    before do
-      allow(mock_response).to receive(:headers).and_return(
+    let(:headers) do
+      [
         { 'Content-Disposition' => 'filename="xyz.txt";' },
         { 'Content-Disposition' => 'attachment; filename=xyz.txt' },
-        { 'Content-Disposition' => 'attachment; filename="xyz.txt"; size="12345"' },
-        { 'Content-Disposition' => 'attachment; filename=""; size="12345"' },
-      )
+        { 'Content-Disposition' => 'attachment; filename="xyz.txt"; size="12345"' }
+      ]
+    end
+
+    before do
+      allow(mock_response).to receive(:headers).and_return(*headers)
     end
 
     it 'provides the filename from the content disposition header' do
       3.times { expect(subject.content_disposition_filename).to eq 'xyz.txt' }
-      expect(subject.content_disposition_filename).to eq ''
+    end
+
+    context 'with empty filename' do
+      let(:headers) { [{ 'Content-Disposition' => 'attachment; filename=""; size="12345"' }] }
+
+      it 'provides the filename from the content disposition header' do
+        expect(subject.content_disposition_filename).to eq ''
+      end
+    end
+
+    context 'with encoded filename' do
+      let(:headers) { [{ 'Content-Disposition' => 'attachment; filename="file%20with%20spaces.txt"; size="12345"' }] }
+
+      it 'provides the filename from the content disposition header' do
+        expect(subject.content_disposition_filename).to eq 'file with spaces.txt'
+      end
     end
   end
+
 end
