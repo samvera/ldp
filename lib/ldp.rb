@@ -1,5 +1,6 @@
 require 'ldp/version'
 require 'rdf/turtle'
+require 'rdf/vocab'
 require 'json/ld'
 require 'rdf/isomorphic'
 require 'rdf/vocab/ldp'
