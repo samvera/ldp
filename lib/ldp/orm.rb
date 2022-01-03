@@ -26,7 +26,7 @@ module Ldp
     end
 
     def value predicate
-      graph.query(:subject => subject_uri, :predicate => predicate).map do |stmt|
+      graph.query({subject: subject_uri, predicate: predicate}).map do |stmt|
         stmt.object
       end
     end
