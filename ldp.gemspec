@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "http_logger"
   spec.add_dependency "deprecation"
   spec.add_dependency "slop"
-  spec.add_development_dependency "activesupport", "~> 6.1"
+  spec.add_development_dependency "activesupport"
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
