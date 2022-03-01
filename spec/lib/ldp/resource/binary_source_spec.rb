@@ -43,11 +43,18 @@ describe Ldp::Resource::BinarySource do
 
   describe "#content" do
     context "when an Ldp::Response is passed in" do
+      subject { instance.content }
+
       let(:mock_response) { instance_double(Faraday::Response, headers: {}, env: { url: "info:a" }) }
       let(:content) { Ldp::Response.new(mock_response) }
-      let(:client) { instance_double(Ldp::Client, get: double(body: 'retrieved value')) }
-      
-      subject { instance.content }
+      let(:client) { instance_double(Ldp::Client) }
+      let(:repository) { nil }
+      let(:client_get_response) { double(body: 'retrieved value') }
+
+      before do
+        allow(client).to receive(:repository).and_return(repository)
+        allow(client).to receive(:get).and_return(client_get_response)
+      end
 
       it { is_expected.to eq 'retrieved value' }
     end

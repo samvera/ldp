@@ -20,7 +20,7 @@ module Ldp
     end
 
     def contains
-      @contains ||= Hash[graph.query(predicate: RDF::Vocab::LDP.contains).map do |x|
+      @contains ||= Hash[graph.query([nil, RDF::Vocab::LDP.contains, nil]).map do |x|
         [x.object, Ldp::Resource::RdfSource.new(client, x.object, contained_graph(x.object))]
       end]
     end
@@ -56,7 +56,7 @@ module Ldp
 
     def contained_graph subject
       g = RDF::Graph.new
-      response_graph.query(subject: subject) do |stmt|
+      response_graph.query([subject, nil, nil]) do |stmt|
         g << stmt
       end
       g

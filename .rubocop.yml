@@ -14,13 +14,25 @@ Bundler/DuplicatedGem:
   Exclude:
     - 'Gemfile'
 
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/ldp/resource.rb'
+
 Metrics/BlockLength:
   Exclude:
     - ldp.gemspec
 
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/ldp/resource.rb'
+
 Naming/FileName:
   Exclude:
     - 'Gemfile'
+
+Naming/PredicateName:
+  Exclude:
+   - '**/*.rb'
 
 RSpec/DescribeClass:
   Exclude:
@@ -29,6 +41,3 @@ RSpec/DescribeClass:
 Style/Documentation:
   Enabled: false
 
-Naming/PredicateName:
-  Exclude:
-   - '**/*.rb'

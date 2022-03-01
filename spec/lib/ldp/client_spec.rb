@@ -1,17 +1,26 @@
 require 'spec_helper'
-describe "Ldp::Client" do
+require 'rdf/vocab'
+
+describe Ldp::Client do
+  subject(:client) { described_class.new(connection, options) }
+
+  let(:simple_graph_resource) do
+    RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello, world!"]
+  end
 
   let(:simple_graph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello, world!"]
-    graph.dump(:ttl)
+    simple_graph_resource.dump(:ttl)
+  end
+
+  let(:simple_container_graph_resource) do
+    RDF::Graph.new << [RDF::URI.new(""), RDF.type, RDF::Vocab::LDP.Container]
   end
 
   let(:simple_container_graph) do
-    graph = RDF::Graph.new << [RDF::URI.new(""), RDF.type, RDF::Vocab::LDP.Container]
-    graph.dump(:ttl)
+    simple_container_graph_resource.dump(:ttl)
   end
 
-  let(:conn_stubs) do
+  let(:connection_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
       stub.head('/a_resource') { [200] }
       stub.get('/a_resource') { [200, {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph] }
@@ -36,39 +45,46 @@ describe "Ldp::Client" do
     end
   end
 
-  let(:mock_conn) do
+  let(:connection) do
     test = Faraday.new do |builder|
-      builder.adapter :test, conn_stubs do |stub|
-      end
+      builder.adapter(:test, connection_stubs)
     end
-
   end
 
-  subject do
-    Ldp::Client.new mock_conn
+  let(:options) do
+    {}
   end
 
-  describe "initialize" do
+  describe ".new" do
+    let(:connection) { Faraday.new("http://example.com") }
+
     it "should accept an existing Faraday connection" do
-      conn = Faraday.new "http://example.com"
-      client = Ldp::Client.new conn
-      expect(client.http).to eq(conn)
+      expect(client.http).to eq(connection)
     end
 
     it "should create a connection from Faraday constructor params" do
-      client = Ldp::Client.new "http://example.com"
       expect(client.http.host).to eq("example.com")
     end
 
-    it 'accepts a connection and client options' do
-      conn = Faraday.new "http://example.com"
-      client = Ldp::Client.new conn, omit_ldpr_interaction_model: true
-      expect(client.http).to eq(conn)
-      expect(client.options[:omit_ldpr_interaction_model]).to eq true
+    context 'with addition client options' do
+      let(:options) do
+        {
+          omit_ldpr_interaction_model: true
+        }
+      end
+
+      it 'accepts a connection and client options' do
+        expect(client.http).to eq(connection)
+        expect(client.options[:omit_ldpr_interaction_model]).to eq true
+      end
     end
 
-    it 'raises an ArgumentError with bad arguments' do
-      expect { Ldp::Client.new(nil, nil, nil) }.to raise_error ArgumentError
+    context 'with addition client options' do
+      subject(:client) { described_class(nil, nil, nil) }
+
+      it 'raises an ArgumentError' do
+        expect { client }.to raise_error(ArgumentError)
+      end
     end
   end
 

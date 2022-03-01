@@ -3,11 +3,13 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'simplecov'
 require 'coveralls'
+require 'pry-byebug'
 
-SimpleCov.formatter = 
-  SimpleCov::Formatter::MultiFormatter.new([SimpleCov::Formatter::HTMLFormatter,
-                                           Coveralls::SimpleCov::Formatter])
-    
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
+  SimpleCov::Formatter::HTMLFormatter,
+  Coveralls::SimpleCov::Formatter
+])
+
 SimpleCov.start do
   add_filter 'spec/'
 end
@@ -15,6 +17,11 @@ end
 require 'ldp'
 require 'faraday'
 require 'active_support/notifications'
+require 'capybara_discoball'
+
+class Ldp::Runner < Capybara::Discoball::Runner
+  attr_reader :server
+end
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate

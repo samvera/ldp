@@ -7,6 +7,7 @@ module Ldp
     include Ldp::Client::Methods
 
     attr_reader :options
+    attr_reader :repository
 
     def initialize(*args)
       http_client, options = if args.length == 2
@@ -20,6 +21,7 @@ module Ldp
                              end
 
       @options = options
+      @repository = options.fetch(:repository, nil)
 
       initialize_http_client(http_client || options)
     end

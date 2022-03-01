@@ -34,6 +34,10 @@ module Ldp
       string << fields.join(", ") << ">"
     end
 
+    def self.rdf_ldp_class
+      RDF::LDP::Resource
+    end
+
     protected
 
     def interaction_model
