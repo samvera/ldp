@@ -21,23 +21,23 @@ Gem::Specification.new do |spec|
   spec.add_dependency "deprecation"
   spec.add_dependency "faraday"
   spec.add_dependency "http_logger"
-  spec.add_dependency "json-ld", '~> 3.2'
-  spec.add_dependency "rdf", "~> 3.2"
+  spec.add_dependency "json-ld", ">= 2.0.0.1", '< 2.1'
+  spec.add_dependency "nokogiri", ">= 1.12.5", '< 1.13'
   spec.add_dependency "rdf-isomorphic"
-  spec.add_dependency "rdf-ldp"
+  spec.add_dependency "rdf-ldp", "~> 1.0"
   spec.add_dependency "rdf-turtle"
-  spec.add_dependency "rdf-vocab", "~> 3.2"
+  spec.add_dependency "rdf-vocab", ">= 2.0.2", '< 2.1'
   spec.add_dependency "slop"
 
+  spec.add_development_dependency 'async', '>= 1.25.0', '< 2'
   spec.add_development_dependency 'bixby', '~> 3.0'
-  spec.add_development_dependency "bundler", "~> 2.3"
-  spec.add_development_dependency "coveralls"
+  spec.add_development_dependency "bundler", ">= 2.0"
+  spec.add_development_dependency "coveralls_reborn", "~> 0.24.0"
   spec.add_development_dependency 'github_changelog_generator'
   spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rspec_junit_formatter"
-  spec.add_development_dependency "coveralls_reborn", "~> 0.24.0"
   spec.add_development_dependency "simplecov"
   spec.add_development_dependency "webrick"
 end

@@ -12,6 +12,13 @@ if ENV['RAILS_VERSION']
   else
     gem 'rails', ENV['RAILS_VERSION']
   end
+
+  case ENV['RAILS_VERSION']
+  when /6\.[0-1]/
+    gem 'activesupport'
+  when /5\.[1-2]/
+    gem 'activesupport'
+  end
 else
-  gem 'rails', '~> 6.0'
+  gem 'rails', '~> 6.0.0'
 end
