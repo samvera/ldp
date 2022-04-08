@@ -61,11 +61,11 @@ workflows:
           name: ruby2-6_rails6-0
           ruby_version: 2.6.9
           rails_version: 6.0.4.4
-      - bundle_and_test:
-          name: ruby2-5_rails6-0
-          ruby_version: 2.5.9
-          rails_version: 6.0.4.4
       # Rails 5.2
+      - bundle_and_test:
+          name: ruby3-0_rails5-2
+          ruby_version: 3.0.3
+          rails_version: 5.2.6
       - bundle_and_test:
           name: ruby2-7_rails5-2
           ruby_version: 2.7.5
@@ -73,10 +73,6 @@ workflows:
       - bundle_and_test:
           name: ruby2-6_rails5-2
           ruby_version: 2.6.9
-          rails_version: 5.2.6
-      - bundle_and_test:
-          name: ruby2-5_rails5-2
-          ruby_version: 2.5.9
           rails_version: 5.2.6
       # Rails 5.1
       - bundle_and_test:
@@ -86,10 +82,6 @@ workflows:
       - bundle_and_test:
           name: ruby2-6_rails5-1
           ruby_version: 2.6.9
-          rails_version: 5.1.7
-      - bundle_and_test:
-          name: ruby2-5_rails5-1
-          ruby_version: 2.5.9
           rails_version: 5.1.7
 
   nightly:
@@ -114,11 +106,11 @@ workflows:
           name: ruby2-6_rails6-0
           ruby_version: 2.6.9
           rails_version: 6.0.4.4
-      - bundle_and_test:
-          name: ruby2-5_rails6-0
-          ruby_version: 2.5.9
-          rails_version: 6.0.4.4
       # Rails 5.2
+      - bundle_and_test:
+          name: ruby3-0_rails5-2
+          ruby_version: 3.0.3
+          rails_version: 5.2.6
       - bundle_and_test:
           name: ruby2-7_rails5-2
           ruby_version: 2.7.5
@@ -126,10 +118,6 @@ workflows:
       - bundle_and_test:
           name: ruby2-6_rails5-2
           ruby_version: 2.6.9
-          rails_version: 5.2.6
-      - bundle_and_test:
-          name: ruby2-5_rails5-2
-          ruby_version: 2.5.9
           rails_version: 5.2.6
       # Rails 5.1
       - bundle_and_test:
@@ -139,8 +127,4 @@ workflows:
       - bundle_and_test:
           name: ruby2-6_rails5-1
           ruby_version: 2.6.9
-          rails_version: 5.1.7
-      - bundle_and_test:
-          name: ruby2-5_rails5-1
-          ruby_version: 2.5.9
           rails_version: 5.1.7

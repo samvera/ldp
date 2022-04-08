@@ -21,12 +21,12 @@ Gem::Specification.new do |spec|
   spec.add_dependency "deprecation"
   spec.add_dependency "faraday"
   spec.add_dependency "http_logger"
-  spec.add_dependency "json-ld", ">= 2.0.0.1", '< 2.1'
-  spec.add_dependency "nokogiri", ">= 1.12.5", '< 1.13'
+  spec.add_dependency "json-ld", '~> 3.2'
+  spec.add_dependency "nokogiri"
   spec.add_dependency "rdf-isomorphic"
-  spec.add_dependency "rdf-ldp", "~> 1.0"
+  spec.add_dependency "rdf-ldp"
   spec.add_dependency "rdf-turtle"
-  spec.add_dependency "rdf-vocab", ">= 2.0.2", '< 2.1'
+  spec.add_dependency "rdf-vocab", "~> 3.2"
   spec.add_dependency "slop"
 
   spec.add_development_dependency 'async', '>= 1.25.0', '< 2'
