@@ -84,10 +84,10 @@ module Ldp
     # @param [RDF::Graph] original_graph The graph returned by the LDP server
     # @return [RDF::Graph] A graph stripped of any inlined resources present in the original
     def filtered_graph(original_graph)
-      contains_statements = original_graph.query(predicate: RDF::Vocab::LDP.contains)
+      contains_statements = original_graph.query({ predicate: RDF::Vocab::LDP.contains })
 
       contains_statements.each_object do |contained_uri|
-        original_graph.delete(original_graph.query(subject: contained_uri))
+        original_graph.delete(original_graph.query({ subject: contained_uri }))
       end
 
       original_graph

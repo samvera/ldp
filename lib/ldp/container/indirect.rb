@@ -3,7 +3,7 @@ module Ldp
     def members
       return enum_for(:members) unless block_given?
 
-      response_graph.query(predicate: member_relation, object: subject).map do |x|
+      response_graph.query({ predicate: member_relation, object: subject }).map do |x|
         yield rdf_source_for(x.object)
       end
     end

@@ -193,7 +193,7 @@ module Ldp
 
     def content_disposition_filename
       filename = content_disposition_attributes['filename']
-      URI.decode(filename) if filename
+      ::RDF::URI.decode(filename) if filename
     end
 
     private

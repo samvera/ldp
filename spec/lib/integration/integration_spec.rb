@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'capybara_discoball'
 require 'derby/server'
+require 'webrick'
 
 describe 'Integration tests' do
   let!(:derby_server) do
