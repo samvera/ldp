@@ -5,7 +5,7 @@ module Ldp
     require 'ldp/resource/binary_source'
     require 'ldp/resource/rdf_source'
 
-    attr_reader :client, :subject
+    attr_reader :client
     attr_accessor :content
 
     def self.for(client, subject, response)
@@ -33,76 +33,124 @@ module Ldp
       RDF::LDP::Resource.find(subject_uri, client.repository)
     end
 
-    def initialize client, subject, get_response = nil, base_path = ''
+    def initialize(client, subject, get_response = nil, base_path = '')
       @client = client
       @subject = subject
       @get_response = get_response if get_response.is_a?(Faraday::Response) && current?(get_response)
       @base_path = base_path
     end
 
+    def subject
+      return @subject if @subject.is_a?(RDF::URI)
+
+      value = @subject
+      unless value.include?(client.http.url_prefix.to_s)
+        value = "#{client.http.url_prefix.to_s.chomp('/')}#{value}"
+      end
+
+      @subject = RDF::URI.parse(value.to_s)
+    end
+
+    def uri
+      subject
+    end
+
+    def to_uri
+      uri
+    end
+
     ##
     # Get the graph subject as a URI
+    # Legacy
     def subject_uri
-      @subject_uri ||= RDF::URI(subject)
+      subject
     end
 
     ##
     # Reload the LDP resource
     def reload
-      self.class.new client, subject, @get_response
+      self.class.new(client, subject)
+    end
+
+    def head_request
+      client.head(subject)
+    rescue Ldp::NotFound => not_found
+      nil
+    rescue Ldp::Gone => gone
+      nil
+    end
+
+    # Legacy
+    def head
+      head_request
+    end
+
+    def persisted?
+      !@persisted.nil? || (!head_request.nil? && head_request.success?)
     end
 
     ##
     # Is the resource new, or does it exist in the LDP server?
     def new?
-      binding.pry
-      return persisted.nil? if client.repository
+      !persisted?
+    end
 
+    def find
+      @persisted = nil
 
-      # Legacy support
-      subject.nil? || head == None
+      if client.repository
+        @persisted = RDF::LDP::Resource.find(subject, client.repository)
+      else
+        raise(ArgumentError, "No repository has been set for the LDP client")
+      end
     end
 
     def persisted
       @persisted ||= begin
-                       binding.pry
-                       RDF::LDP::Resource.find(subject, client.repository)
+                       find
                      rescue RDF::LDP::NotFound
                        nil
                      end
     end
 
+    def graph
+      return if persisted.nil?
+
+      persisted.graph
+    end
+
+    def statements
+      return [] if graph.nil?
+
+      graph.statements
+    end
+
     ##
     # Have we retrieved the content already?
     def retrieved_content?
-      @get_response
+      !@get_response.nil?
     end
 
     ##
     # Get the resource
-    def get
-      return @get_response ||= persisted if client.repository
-
-      # Legacy support
-      @get_response ||= client.get(subject)
+    def get_request
+      @get_response = client.get(subject)
     end
 
-    def head
-      @head ||= begin
-        @get_response || client.head(subject)
-                rescue Ldp::NotFound
-                  None
-      end
+    # Legacy
+    def get
+      get_request
     end
 
     ##
     # Delete the resource
     def delete
-      client.delete subject do |req|
-        req.headers['If-Unmodified-Since'] = get.last_modified if retrieved_content?
-      end
+      return if new?
+
+      persisted.destroy
     end
 
+    # Legacy
     def save
       new? ? create : update
     end
@@ -115,12 +163,11 @@ module Ldp
     # Create a new resource at the URI
     # @return [RdfSource] the new representation
     # @raise [Ldp::Conflict] if you attempt to call create on an existing resource
-    def create &block
-      raise Ldp::Conflict, "Can't call create on an existing resource (#{subject})" unless new?
+    def create(&block)
+      raise(Ldp::Conflict, "Can't call create on an existing resource (#{subject})") unless new?
 
-      binding.pry
       if client.repository
-        built = self.class.rdf_ldp_class.new(subject_uri)
+        built = self.class.rdf_ldp_class.new(subject)
         @persisted = built.create(content, 'application/n-triples')
 
         @subject_uri = @persisted.subject_uri
@@ -151,19 +198,15 @@ module Ldp
       resp
     end
 
-    def head_request
-      client.head(subject)
-    end
-
     def current?(cached_response = nil)
       cached_response ||= @get_response
       return true if new? and subject.nil?
 
-      #new_response = client.head(subject)
+      # new_response = client.head(subject)
       new_response = head_request
 
-      #return false unless response.headers['ETag']
-      #return false unless response.headers['Last-Modified']
+      # return false unless response.headers['ETag']
+      # return false unless response.headers['Last-Modified']
 
       return false unless new_response.headers['ETag'] == cached_response.headers['ETag']
       return false unless new_response.headers['Last-Modified'] == cached_response.headers['Last-Modified']

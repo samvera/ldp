@@ -19,53 +19,67 @@ module Ldp
       alias new_from_response for
     end
 
+    def contained_statements
+      graph.query([nil, RDF::Vocab::LDP.contains, nil])
+    end
+
     def contains
-      @contains ||= Hash[graph.query([nil, RDF::Vocab::LDP.contains, nil]).map do |x|
-        [x.object, Ldp::Resource::RdfSource.new(client, x.object, contained_graph(x.object))]
+      @contains ||= Hash[contained_statements.map do |x|
+        child_graph = build_child_graph(x.object)
+        [x.object, Ldp::Resource::RdfSource.new(client, x.object, child_graph)]
       end]
     end
 
     ##
     # Add a new resource to the LDP container
-    def add *args
-      # slug, graph
-      # graph
-      # slug
-
+    def add(*args)
       case
       when (args.length > 2 || args.length == 0)
-
+        raise(ArgumentError, "LDP::Container#add invoked with invalid arguments: \n" + args.join("\n") + ")")
       when (args.length == 2)
-        slug, graph_or_content = args
+        slug, subgraph = args
       when (args.first.is_a? RDF::Enumerable)
         slug = nil
-        graph_or_content = args.first
+        subgraph = args.first
       else
-        slug = args.first
-        graph_or_content = build_empty_graph
+        subgraph = [args.first]
       end
 
-      resp = client.post subject, (graph_or_content.is_a?(RDF::Enumerable) ? graph_or_content.dump(:ttl) : graph_or_content) do |req|
-        req.headers['Slug'] = slug
-      end
+      if client.repository
+        subgraph.each do |statement|
+          persisted.add(statement)
+        end
+      else
+        # Legacy
+        post_body = (graph_or_content.is_a?(RDF::Enumerable) ? graph_or_content.dump(:ttl) : graph_or_content)
+        post_headers = { 'Content-Type': 'text/turtle' }
 
-      client.find_or_initialize resp.headers['Location']
+        response = client.post subject, post_body do |request|
+          request.headers['Slug'] = slug
+          request.headers['Content-Type'] = 'text/turtle'
+        end
+
+        client.find_or_initialize(response.headers['Location'])
+      end
     end
 
     private
 
-    def contained_graph subject
-      g = RDF::Graph.new
-      response_graph.query([subject, nil, nil]) do |stmt|
-        g << stmt
+    def build_child_graph(child)
+      child_graph = RDF::Graph.new
+
+      graph.query([child, nil, nil]) do |s|
+        child_graph << s
       end
-      g
+
+      child_graph
     end
 
     def rdf_source_for(object)
-      g = contained_graph(object)
+      child_graph = build_child_graph(object)
+      source_graph = child_graph unless child_graph.empty?
 
-      Ldp::Resource::RdfSource.new(client, object, (g unless g.empty?))
+      Ldp::Resource::RdfSource.new(client, object, source_graph)
     end
   end
 end

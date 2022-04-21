@@ -15,6 +15,14 @@ module Ldp
       @response = response
     end
 
+    def success?
+      @response.success?
+    end
+
+    def status
+      @response.status
+    end
+
     ##
     # Extract the Link: headers from the HTTP resource
     def links

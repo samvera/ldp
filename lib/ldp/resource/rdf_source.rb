@@ -2,7 +2,7 @@ require 'rdf/turtle'
 
 module Ldp
   class Resource::RdfSource < Ldp::Resource
-    def initialize client, subject, graph_or_response = nil, base_path = ''
+    def initialize(client, subject, graph_or_response = nil, base_path = '')
       super
 
       case graph_or_response
@@ -28,19 +28,10 @@ module Ldp
     end
 
     def content
-      graph.dump(:ttl) if graph
+      graph.dump(:ttl) if persisted? && graph
     end
 
-    def graph
-      @graph ||= begin
-                   if new? || subject.nil?
-                     build_empty_graph
-                   else
-                     filtered_graph(response_graph)
-                   end
-                 end
-    end
-
+    # Legacy
     def build_empty_graph
       graph_class.new
     end
@@ -51,15 +42,6 @@ module Ldp
     # @return [Class] a class that is an descendant of RDF::Graph
     def graph_class
       RDF::Graph
-    end
-
-    ##
-    # Parse the graph returned by the LDP server into an RDF::Graph
-    # @return [RDF::Graph]
-    def response_graph
-      @response_graph ||= begin
-                            response_as_graph(get) unless new?
-                          end
     end
 
     protected
