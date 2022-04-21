@@ -33,10 +33,10 @@ module Ldp
       RDF::LDP::Resource.find(subject_uri, client.repository)
     end
 
-    def initialize client, subject, response = nil, base_path = ''
+    def initialize client, subject, get_response = nil, base_path = ''
       @client = client
       @subject = subject
-      @get = response if response.is_a? Faraday::Response and current? response
+      @get_response = get_response if get_response.is_a?(Faraday::Response) && current?(get_response)
       @base_path = base_path
     end
 
@@ -49,13 +49,15 @@ module Ldp
     ##
     # Reload the LDP resource
     def reload
-      self.class.new client, subject, @get
+      self.class.new client, subject, @get_response
     end
 
     ##
     # Is the resource new, or does it exist in the LDP server?
     def new?
+      binding.pry
       return persisted.nil? if client.repository
+
 
       # Legacy support
       subject.nil? || head == None
@@ -63,6 +65,7 @@ module Ldp
 
     def persisted
       @persisted ||= begin
+                       binding.pry
                        RDF::LDP::Resource.find(subject, client.repository)
                      rescue RDF::LDP::NotFound
                        nil
@@ -72,21 +75,21 @@ module Ldp
     ##
     # Have we retrieved the content already?
     def retrieved_content?
-      @get
+      @get_response
     end
 
     ##
     # Get the resource
     def get
-      return @get ||= persisted if client.repository
+      return @get_response ||= persisted if client.repository
 
       # Legacy support
-      @get ||= client.get(subject)
+      @get_response ||= client.get(subject)
     end
 
     def head
       @head ||= begin
-        @get || client.head(subject)
+        @get_response || client.head(subject)
                 rescue Ldp::NotFound
                   None
       end
@@ -115,6 +118,7 @@ module Ldp
     def create &block
       raise Ldp::Conflict, "Can't call create on an existing resource (#{subject})" unless new?
 
+      binding.pry
       if client.repository
         built = self.class.rdf_ldp_class.new(subject_uri)
         @persisted = built.create(content, 'application/n-triples')
@@ -147,26 +151,36 @@ module Ldp
       resp
     end
 
-    def current? response = nil
-      response ||= @get
-      return true if new? and subject.nil?
-
-      new_response = client.head(subject)
-
-      response.headers['ETag'] &&
-        response.headers['Last-Modified'] &&
-        new_response.headers['ETag'] == response.headers['ETag'] &&
-        new_response.headers['Last-Modified'] == response.headers['Last-Modified']
+    def head_request
+      client.head(subject)
     end
 
-    def update_cached_get(response)
-      response = Response.new(response)
+    def current?(cached_response = nil)
+      cached_response ||= @get_response
+      return true if new? and subject.nil?
 
-      if response.etag.nil? || response.last_modified.nil?
-        response = client.head(subject)
+      #new_response = client.head(subject)
+      new_response = head_request
+
+      #return false unless response.headers['ETag']
+      #return false unless response.headers['Last-Modified']
+
+      return false unless new_response.headers['ETag'] == cached_response.headers['ETag']
+      return false unless new_response.headers['Last-Modified'] == cached_response.headers['Last-Modified']
+
+      true
+    end
+
+    # Updates the `E-tag` and `last-modified` header values for the resource
+    def update_cached_get(cached_response)
+      cached_response = Response.new(cached_response)
+
+      if cached_response.etag.nil? || cached_response.last_modified.nil?
+        cached_response = head_request
       end
-      @get.etag = response.etag
-      @get.last_modified = response.last_modified
+
+      @get_response.etag = cached_response.etag
+      @get_response.last_modified = cached_response.last_modified
     end
 
     protected

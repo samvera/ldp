@@ -66,20 +66,20 @@ describe Ldp::Client do
       expect(client.http.host).to eq("example.com")
     end
 
-    context 'with addition client options' do
+    context 'with additional client options' do
       let(:options) do
         {
           omit_ldpr_interaction_model: true
         }
       end
 
-      it 'accepts a connection and client options' do
+      it 'passes client options to the underlying HTTP client' do
         expect(client.http).to eq(connection)
         expect(client.options[:omit_ldpr_interaction_model]).to eq true
       end
     end
 
-    context 'with addition client options' do
+    context 'when passing invalid constructor arguments' do
       subject(:client) { described_class(nil, nil, nil) }
 
       it 'raises an ArgumentError' do
