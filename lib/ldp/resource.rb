@@ -9,20 +9,11 @@ module Ldp
     attr_accessor :content
 
     def self.for(client, subject, response)
-      if client.repository.nil?
-
-        # Legacy support
-        found = case
-                when response.container?
-                  Ldp::Container.for client, subject, response
-                when response.rdf_source?
-                  Resource::RdfSource.new client, subject, response
-                else
-                  Resource::BinarySource.new client, subject, response
-                end
-
-        return found
-      end
+      repository = if client.repository.nil?
+                     RDF::Repository.new
+                   else
+                     client.repository
+                   end
 
       subject_uri = if subject.is_a?(URI::HTTP)
                       RDF::URI(subject.to_s)
@@ -30,7 +21,7 @@ module Ldp
                       RDF::URI(response.response.env.url)
                     end
 
-      RDF::LDP::Resource.find(subject_uri, client.repository)
+      RDF::LDP::Resource.find(subject_uri, repository)
     end
 
     def initialize(client, subject, get_response = nil, base_path = '')
@@ -40,15 +31,21 @@ module Ldp
       @base_path = base_path
     end
 
-    def subject
-      return @subject if @subject.is_a?(RDF::URI)
+    ##
+    # Get the graph subject as a URI
+    # Legacy
+    attr_reader :subject
 
-      value = @subject
-      unless value.include?(client.http.url_prefix.to_s)
-        value = "#{client.http.url_prefix.to_s.chomp('/')}#{value}"
-      end
+    def subject_uri
+      @subject_uri ||= begin
+                         value = @subject
+                         unless value.include?(client.http.url_prefix.to_s)
+                           value = "#{client.http.url_prefix.to_s.chomp('/')}#{value}"
+                         end
 
-      @subject = RDF::URI.parse(value.to_s)
+                         # @subject = RDF::URI.parse(value.to_s)
+                         RDF::URI.parse(value.to_s)
+                       end
     end
 
     def uri
@@ -57,13 +54,6 @@ module Ldp
 
     def to_uri
       uri
-    end
-
-    ##
-    # Get the graph subject as a URI
-    # Legacy
-    def subject_uri
-      subject
     end
 
     ##
@@ -95,14 +85,12 @@ module Ldp
       !persisted?
     end
 
-    def find
-      @persisted = nil
+    def repository
+      client.repository || RDF::Repository.new
+    end
 
-      if client.repository
-        @persisted = RDF::LDP::Resource.find(subject, client.repository)
-      else
-        raise(ArgumentError, "No repository has been set for the LDP client")
-      end
+    def find
+      @persisted = RDF::LDP::Resource.find(subject, repository)
     end
 
     def persisted
