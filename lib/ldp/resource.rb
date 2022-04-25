@@ -24,10 +24,10 @@ module Ldp
       RDF::LDP::Resource.find(subject_uri, repository)
     end
 
-    def initialize(client, subject, get_response = nil, base_path = '')
+    def initialize(client, subject, http_response = nil, base_path = '')
       @client = client
       @subject = subject
-      @get_response = get_response if get_response.is_a?(Faraday::Response) && current?(get_response)
+      @http_response = http_response if http_response.is_a?(Faraday::Response) && current?(http_response)
       @base_path = base_path
     end
 
@@ -36,15 +36,24 @@ module Ldp
     # Legacy
     attr_reader :subject
 
+    def self.build_subject_uri(value:, client:)
+      return if value.nil?
+      return if client.nil? || client.http.nil? || client.http.url_prefix.nil?
+      prefix = client.http.url_prefix
+
+      parsed = if !value.to_s.include?(prefix.to_s)
+                 "#{prefix.to_s.chomp('/')}#{value}"
+               else
+                 value
+               end
+
+      RDF::URI.parse(parsed)
+    end
+
     def subject_uri
       @subject_uri ||= begin
-                         value = @subject
-                         unless value.include?(client.http.url_prefix.to_s)
-                           value = "#{client.http.url_prefix.to_s.chomp('/')}#{value}"
-                         end
-
-                         # @subject = RDF::URI.parse(value.to_s)
-                         RDF::URI.parse(value.to_s)
+                         value = self.class.build_subject_uri(value: @subject, client: client)
+                         RDF::URI.parse(value)
                        end
     end
 
@@ -64,9 +73,9 @@ module Ldp
 
     def head_request
       client.head(subject)
-    rescue Ldp::NotFound => not_found
+    rescue Ldp::NotFound
       nil
-    rescue Ldp::Gone => gone
+    rescue Ldp::Gone
       nil
     end
 
@@ -116,14 +125,16 @@ module Ldp
     ##
     # Have we retrieved the content already?
     def retrieved_content?
-      !@get_response.nil?
+      !@http_response.nil?
     end
 
     ##
     # Get the resource
+    # rubocop:disable Naming/AccessorMethodName
     def get_request
-      @get_response = client.get(subject)
+      @http_response = client.get(subject)
     end
+    # rubocop:enable Naming/AccessorMethodName
 
     # Legacy
     def get
@@ -187,7 +198,7 @@ module Ldp
     end
 
     def current?(cached_response = nil)
-      cached_response ||= @get_response
+      cached_response ||= @http_response
       return true if new? and subject.nil?
 
       # new_response = client.head(subject)
@@ -210,8 +221,8 @@ module Ldp
         cached_response = head_request
       end
 
-      @get_response.etag = cached_response.etag
-      @get_response.last_modified = cached_response.last_modified
+      @http_response.etag = cached_response.etag
+      @http_response.last_modified = cached_response.last_modified
     end
 
     protected

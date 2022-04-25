@@ -137,12 +137,35 @@ module Ldp::Client::Methods
   # Some valid query paths can be mistaken for absolute URIs
   # with an alternative scheme. If the scheme isn't HTTP(S), assume
   # they meant a relative URI instead.
-  def munge_to_relative_url url
-    purl = URI.parse(url)
+  def munge_to_relative_url_dep url
+    purl = build_url(uri: url)
+
     if purl.absolute? and !((purl.scheme rescue nil) =~ /^http/)
       "./" + url
     else
       url
     end
+  end
+
+  # Make this a class method
+  def build_url(uri:)
+    # Default to TLS/HTTPS
+    url = if uri.scheme == "http"
+            URI::HTTP.build(host: uri.host, port: uri.port, path: uri.path, query: uri.query, fragment: uri.fragment)
+          else
+            URI::HTTPS.build(host: uri.host, port: uri.port, path: uri.path, query: uri.query, fragment: uri.fragment)
+          end
+
+    # Default to localhost
+    url.host = 'localhost' if url.host.nil?
+    url
+  end
+
+  # Legacy support
+  def munge_to_relative_url(value)
+    uri = URI.parse(value)
+    return "./#{uri.path}" unless uri.scheme == 'https' || uri.scheme == 'http'
+
+    build_url(uri: uri)
   end
 end

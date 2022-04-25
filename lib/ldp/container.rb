@@ -52,7 +52,6 @@ module Ldp
       else
         # Legacy
         post_body = (graph_or_content.is_a?(RDF::Enumerable) ? graph_or_content.dump(:ttl) : graph_or_content)
-        post_headers = { 'Content-Type': 'text/turtle' }
 
         response = client.post subject, post_body do |request|
           request.headers['Slug'] = slug

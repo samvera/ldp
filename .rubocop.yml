@@ -16,14 +16,24 @@ Bundler/DuplicatedGem:
 
 Metrics/AbcSize:
   Exclude:
+    - 'lib/ldp/container.rb'
     - 'lib/ldp/resource.rb'
 
 Metrics/BlockLength:
   Exclude:
-    - ldp.gemspec
+    - 'ldp.gemspec'
+
+Metrics/ClassLength:
+  Exclude:
+    - 'lib/ldp/resource.rb'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'lib/ldp/container.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
+    - 'lib/ldp/container.rb'
     - 'lib/ldp/resource.rb'
 
 Naming/FileName:

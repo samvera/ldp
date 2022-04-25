@@ -5,15 +5,19 @@ module Ldp
     def initialize(client, subject, graph_or_response = nil, base_path = '')
       super
 
-      case graph_or_response
-      when RDF::Enumerable
-        @graph = graph_or_response
-      when Ldp::Response
-      when NilClass
-        # no-op
-      else
-        raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}"
+      unless graph_or_response.nil?
+        case graph_or_response
+        when RDF::Enumerable
+          @graph = graph_or_response
+        when Ldp::Response
+          @graph = response_as_graph(graph_or_response)
+        else
+          raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}"
+        end
       end
+
+      return unless !@graph.nil? && subject.nil? && !@graph.empty?
+      @subject = @graph.first.subject
     end
 
     def create
@@ -29,11 +33,6 @@ module Ldp
 
     def content
       graph.dump(:ttl) if persisted? && graph
-    end
-
-    # Legacy
-    def build_empty_graph
-      graph_class.new
     end
 
     ##
@@ -63,7 +62,9 @@ module Ldp
     # @param [Faraday::Response] graph query response
     # @return [RDF::Graph]
     def response_as_graph(resp)
-      build_empty_graph << resp.graph
+      built = graph_class.new
+      built << resp.graph
+      built
     end
 
     ##

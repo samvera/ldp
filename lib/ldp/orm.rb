@@ -20,24 +20,30 @@ module Ldp
     end
 
     def graph
-      Ldp.instrument 'graph.orm.ldp', subject: subject_uri do
+      @graph ||= Ldp.instrument 'graph.orm.ldp', subject: subject_uri do
         resource.graph
       end
     end
 
-    def value predicate
+    def value(predicate)
+      raise(ArgumentError, "Resource has no associated RDF Graph: #{resource}") if graph.nil?
+
       graph.query([subject_uri, predicate, nil]).map do |stmt|
         stmt.object
       end
     end
 
     def query *args, &block
+      raise(ArgumentError, "Resource has no associated RDF Graph: #{resource}") if graph.nil?
+
       Ldp.instrument 'query.orm.ldp', subject: subject_uri do
         graph.query *args, &block
       end
     end
 
     def reload
+      @graph = nil
+
       Ldp.instrument 'reload.orm.ldp', subject: subject_uri do
         Ldp::Orm.new resource.reload
       end
