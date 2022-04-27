@@ -6,8 +6,7 @@ module Ldp
     require 'ldp/client/prefer_headers'
     include Ldp::Client::Methods
 
-    attr_reader :options
-    attr_reader :repository
+    attr_reader :http, :options, :repository
 
     def initialize(*args)
       http_client, options = if args.length == 2
@@ -26,6 +25,8 @@ module Ldp
       initialize_http_client(http_client || options)
     end
 
+    delegate :host, :port, to: :http
+
     # Find or initialize a new LDP resource by URI
     def find_or_initialize(subject, options = {})
       data = get(subject, options)
@@ -35,6 +36,16 @@ module Ldp
 
     def logger
       Ldp.logger
+    end
+
+    private
+
+    def initialize_http_client(*http_client)
+      @http = if (http_client.length == 1) && http_client.first.is_a?(Faraday::Connection)
+                http_client.first
+              else
+                Faraday.new(*http_client)
+              end
     end
   end
 end

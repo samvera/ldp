@@ -3,21 +3,11 @@ require 'faraday'
 ##
 # HTTP client methods for making requests to an LDP resource and getting a response back.
 module Ldp::Client::Methods
-  attr_reader :http
-
-  def initialize_http_client(*http_client)
-    if http_client.length == 1 and http_client.first.is_a?(Faraday::Connection)
-      @http = http_client.first
-    else
-      @http = Faraday.new(*http_client)
-    end
-  end
-
-  def head(url)
+  def head(value)
     response = http.head do |request|
-      relative_url = munge_to_relative_url(url)
-      request.url(relative_url)
+      url = build_url(value)
 
+      request.url(url)
       yield request if block_given?
     end
 
@@ -27,9 +17,10 @@ module Ldp::Client::Methods
   end
 
   # Get a LDP Resource by URI
-  def get url, options = {}
+  def get(value, options = {})
     response = http.get do |request|
-      request.url munge_to_relative_url(url)
+      url = build_url(value)
+      request.url(url)
       prefer_headers = ::Ldp::PreferHeaders.new
 
       if options[:minimal]
@@ -148,24 +139,21 @@ module Ldp::Client::Methods
   end
 
   # Make this a class method
-  def build_url(uri:)
-    # Default to TLS/HTTPS
-    url = if uri.scheme == "http"
-            URI::HTTP.build(host: uri.host, port: uri.port, path: uri.path, query: uri.query, fragment: uri.fragment)
-          else
-            URI::HTTPS.build(host: uri.host, port: uri.port, path: uri.path, query: uri.query, fragment: uri.fragment)
-          end
+  def build_url(value)
+    uri = URI.parse(value)
+    uri.host = host if uri.host.nil?
+    uri.port = port if uri.port.nil?
 
-    # Default to localhost
-    url.host = 'localhost' if url.host.nil?
-    url
+    # Default to HTTP (this is for legacy support)
+    if uri.scheme == "https"
+      URI::HTTPS.build(host: uri.host, port: uri.port, path: uri.path, query: uri.query, fragment: uri.fragment)
+    else
+      URI::HTTP.build(host: uri.host, port: uri.port, path: uri.path, query: uri.query, fragment: uri.fragment)
+    end
   end
 
   # Legacy support
   def munge_to_relative_url(value)
-    uri = URI.parse(value)
-    return "./#{uri.path}" unless uri.scheme == 'https' || uri.scheme == 'http'
-
-    build_url(uri: uri)
+    build_url(value)
   end
 end

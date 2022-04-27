@@ -19,6 +19,10 @@ require 'faraday'
 require 'active_support/notifications'
 require 'capybara_discoball'
 
+root_path = File.dirname(__FILE__)
+root_path_name = Pathname.new(root_path)
+Dir[root_path_name.join("support", "**", "*.rb")].sort.each { |file| require file }
+
 class Ldp::Runner < Capybara::Discoball::Runner
   attr_reader :server
 end
