@@ -18,6 +18,7 @@ Metrics/AbcSize:
   Exclude:
     - 'lib/ldp/container.rb'
     - 'lib/ldp/resource.rb'
+    - 'lib/ldp/client/methods.rb'
 
 Metrics/BlockLength:
   Exclude:
@@ -31,10 +32,15 @@ Metrics/MethodLength:
   Exclude:
     - 'lib/ldp/container.rb'
 
+Metrics/ModuleLength:
+  Exclude:
+    - 'lib/ldp/client/methods.rb'
+
 Metrics/PerceivedComplexity:
   Exclude:
     - 'lib/ldp/container.rb'
     - 'lib/ldp/resource.rb'
+    - 'lib/ldp/client/methods.rb'
 
 Naming/FileName:
   Exclude:

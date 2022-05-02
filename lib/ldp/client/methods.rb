@@ -155,10 +155,20 @@ module Ldp::Client::Methods
   # Make this a class method
   def build_url(value)
     uri = URI.parse(value)
-    uri.host = host if uri.host.nil?
-    uri.port = port if uri.port.nil?
 
-    uri.path = "/#{uri.path}" unless uri.path.chars.first == "/"
+    if uri.opaque
+      value = "/#{value}" unless value.chars.first == "/"
+      protocol = if uri.scheme == "https"
+                   "https:"
+                 else
+                   "http:"
+                 end
+      uri = URI.parse("#{protocol}//#{host}:#{port}#{value}")
+    else
+      uri.path = "/#{uri.path}" unless uri.path.chars.first == "/"
+      uri.host = host if uri.host.nil?
+      uri.port = port if uri.port.nil?
+    end
 
     # Default to HTTP (this is for legacy support)
     if uri.scheme == "https"
