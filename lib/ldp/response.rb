@@ -1,10 +1,10 @@
-require 'uri'
+require "uri"
 
 module Ldp
   class Response
     extend Forwardable
 
-    TYPE = 'type'.freeze
+    TYPE = "type".freeze
 
     attr_reader :response
 
@@ -28,7 +28,7 @@ module Ldp
     def links
       @links ||= begin
         h = {}
-        Array(headers['Link'.freeze]).map { |x| x.split(','.freeze) }.flatten.inject(h) do |memo, header|
+        Array(headers["Link".freeze]).map { |x| x.split(",".freeze) }.flatten.inject(h) do |memo, header|
           m = header.match(/<(?<link>.*)>;\s?rel="(?<rel>[^"]+)"/)
           if m
             memo[m[:rel]] ||= []
@@ -43,7 +43,7 @@ module Ldp
     def applied_preferences
       h = {}
 
-      Array(headers['Preference-Applied'.freeze]).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
+      Array(headers["Preference-Applied".freeze]).map { |x| x.split(",") }.flatten.inject(h) do |memo, header|
         m = header.match(/(?<key>[^=;]*)(=(?<value>[^;,]*))?(;\s*(?<params>[^,]*))?/)
         includes = (m[:params].match(/include="(?<include>[^"]+)"/)[:include] || "").split(" ")
         omits = (m[:params].match(/omit="(?<omit>[^"]+)"/)[:omit] || "").split(" ")
@@ -132,13 +132,13 @@ module Ldp
     ##
     # Extract the ETag for the resource
     def etag
-      @etag ||= headers['ETag'.freeze]
+      @etag ||= headers["ETag".freeze]
     end
 
     ##
     # Extract the last modified header for the resource
     def last_modified
-      @last_modified ||= headers['Last-Modified'.freeze]
+      @last_modified ||= headers["Last-Modified".freeze]
     end
 
     ##
@@ -147,7 +147,7 @@ module Ldp
       Array(links[TYPE])
     end
 
-    RETURN = 'return'.freeze
+    RETURN = "return".freeze
 
     def includes? preference
       key = Ldp.send("prefer_#{preference}") if Ldp.respond_to("prefer_#{preference}")
@@ -184,30 +184,30 @@ module Ldp
     ##
     # Get the URI to the first page
     def first_page
-      if links['first']
-        RDF::URI.new links['first']
+      if links["first"]
+        RDF::URI.new links["first"]
       elsif graph.has_statement? RDf::Statement.new(page_subject, RDF::Vocab::LDP.nextPage, nil)
         subject
       end
     end
 
     def content_type
-      headers['Content-Type']
+      headers["Content-Type"]
     end
 
     def content_length
-      headers['Content-Length'].to_i
+      headers["Content-Length"].to_i
     end
 
     def content_disposition_filename
-      filename = content_disposition_attributes['filename']
+      filename = content_disposition_attributes["filename"]
       CGI.unescape(filename) if filename
     end
 
     private
 
     def content_disposition_attributes
-      parts = headers['Content-Disposition'].split(/;\s*/).collect { |entry| entry.split(/\s*=\s*/) }
+      parts = headers["Content-Disposition"].split(/;\s*/).collect { |entry| entry.split(/\s*=\s*/) }
       entries = parts.collect do |part|
         value = part[1].respond_to?(:sub) ? part[1].sub(%r{^"(.*)"$}, '\1') : part[1]
         [part[0], value]
@@ -220,7 +220,7 @@ module Ldp
     end
 
     def reader_for_content_type
-      content_type = content_type || 'text/turtle'
+      content_type = content_type || "text/turtle"
       content_type = Array(content_type).first
       RDF::Reader.for(content_type: content_type)
     end

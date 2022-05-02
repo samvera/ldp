@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'rdf/vocab'
 
-describe Ldp::Client do
+describe Ldp::Client, lamprey_server: true do
   subject(:client) { described_class.new(connection, options) }
 
   let(:simple_graph_resource) do
@@ -46,9 +46,7 @@ describe Ldp::Client do
   end
 
   let(:connection) do
-    test = Faraday.new do |builder|
-      builder.adapter(:test, connection_stubs)
-    end
+    @connection
   end
 
   let(:options) do
@@ -90,16 +88,7 @@ describe Ldp::Client do
 
   describe '#logger' do
     it 'inherits the upstream logger' do
-      expect(subject.logger).to eq Ldp.logger
-    end
-  end
-
-  describe "get" do
-    it "should GET content from the HTTP endpoint" do
-      resp = subject.get "a_resource"
-      expect(resp).to be_a_kind_of(Ldp::Response)
-      expect(resp.body).to eq(simple_graph)
-      expect(resp.resource?).to be true
+      expect(client.logger).to eq Ldp.logger
     end
 
     it "is instrumented" do
@@ -107,27 +96,27 @@ describe Ldp::Client do
       ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
         vals << payload[:name]
       end
-      subject.get "a_resource"
+      client.get "a_resource"
       expect(vals).to eq ['GET']
     end
 
     it "should accept a block to change the HTTP request" do
-      expect { |b| subject.get "a_resource", &b }.to yield_control
+      expect { |b| client.get "a_resource", &b }.to yield_control
     end
 
     context "should provide convenient accessors for LDP Prefer headers" do
       it "should set the minimal header" do
-        subject.get "a_resource", minimal: true do |req|
+        client.get "a_resource", minimal: true do |req|
           expect(req.headers["Prefer"]).to eq "return=minimal"
         end
       end
       it "should set the include parameter" do
-        subject.get "a_resource", include: "membership" do |req|
+        client.get "a_resource", include: "membership" do |req|
           expect(req.headers["Prefer"]).to match "include=\"#{RDF::Vocab::LDP.PreferMembership}\""
         end
       end
       it "should set the omit parameter" do
-        subject.get "a_resource", omit: "containment" do |req|
+        client.get "a_resource", omit: "containment" do |req|
           expect(req.headers["Prefer"]).to match "omit=\"#{RDF::Vocab::LDP.PreferContainment}\""
         end
       end
@@ -135,20 +124,23 @@ describe Ldp::Client do
 
     context "with an invalid relative uri" do
       it "should work" do
-        subject.get "test:1"
+        client.get "test:1"
       end
     end
 
     context "with an absolute uri" do
       it "should work" do
-        subject.get "http://test:8080/abc"
+        client.get "http://test:8080/abc"
       end
     end
   end
 
   describe "delete" do
+    let(:subject_uri) { '/deleted_resource' }
+    let(:resource) { Ldp::Resource.new(client, subject_uri, nil, base_path) }
+
     it "should DELETE the subject from the HTTP endpoint" do
-      resp = subject.delete "a_resource"
+      resp = client.delete "a_resource"
       expect(resp.status).to eq(204)
     end
 
@@ -157,18 +149,18 @@ describe Ldp::Client do
       ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
         vals << payload[:name]
       end
-      subject.delete "a_resource"
+      client.delete "a_resource"
       expect(vals).to eq ['DELETE']
     end
 
     it "should accept a block to change the HTTP request" do
-      expect { |b| subject.delete "a_resource", &b }.to yield_control
+      expect { |b| client.delete "a_resource", &b }.to yield_control
     end
   end
 
   describe "post" do
     it "should POST to the subject at the HTTP endpoint" do
-      resp = subject.post "a_container"
+      resp = client.post "a_container"
       expect(resp.status).to eq(201)
       expect(resp.headers[:Location]).to eq("http://example.com/a_container/subresource")
     end
@@ -178,39 +170,39 @@ describe Ldp::Client do
       ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
         vals << payload[:name]
       end
-      subject.post "a_container"
+      client.post "a_container"
       expect(vals).to eq ['POST']
     end
 
     it "should set content" do
-      subject.post "a_container", 'foo' do |req|
+      client.post "a_container", 'foo' do |req|
         expect(req.body).to eq 'foo'
       end
     end
 
     it "should set default Content-type" do
-      subject.post "a_container", 'foo' do |req|
+      client.post "a_container", 'foo' do |req|
         expect(req.headers).to include({ "Content-Type" => "text/turtle" })
       end
     end
 
     it "should set headers" do
-      subject.post "a_container", 'foo', {'Content-Type' => 'application/pdf'} do |req|
+      client.post "a_container", 'foo', {'Content-Type' => 'application/pdf'} do |req|
         expect(req.headers).to include({ "Content-Type" => "application/pdf" })
       end
     end
 
     it "should set headers passed as arguments" do
-      resp = subject.post "a_container"
+      resp = client.post "a_container"
     end
 
     it "should accept a block to change the HTTP request" do
-      expect { |b| subject.post "a_container", &b }.to yield_control
+      expect { |b| client.post "a_container", &b }.to yield_control
     end
 
     it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.post "a_container", 'foo' do |req|
+      client.http.basic_auth('Aladdin', 'open sesame')
+      client.post "a_container", 'foo' do |req|
         expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
       end
     end
@@ -219,7 +211,7 @@ describe Ldp::Client do
 
   describe "put" do
     it "should PUT content to the subject at the HTTP endpoint" do
-      resp = subject.put "a_resource", "some-payload"
+      resp = client.put "a_resource", "some-payload"
       expect(resp.status).to eq(204)
     end
 
@@ -228,41 +220,41 @@ describe Ldp::Client do
       ActiveSupport::Notifications.subscribe('http.ldp') do |name, start, finish, id, payload|
         vals << payload[:name]
       end
-      subject.put "a_resource", "some-payload"
+      client.put "a_resource", "some-payload"
       expect(vals).to eq ['PUT']
     end
 
     it "should accept a block to change the HTTP request" do
-      expect { |b| subject.put "a_resource", "some-payload", &b }.to yield_control
+      expect { |b| client.put "a_resource", "some-payload", &b }.to yield_control
     end
 
     it "should set headers" do
-      subject.put "a_resource", 'payload', {'Content-Type' => 'application/pdf'} do |req|
+      client.put "a_resource", 'payload', {'Content-Type' => 'application/pdf'} do |req|
         expect(req.headers).to include({ "Content-Type" => "application/pdf" })
       end
     end
 
     describe "error checking" do
       it "checks for other kinds of 4xx errors" do
-        expect { subject.put "forbidden_resource", "some-payload" }.to raise_error Ldp::HttpError
+        expect { client.put "forbidden_resource", "some-payload" }.to raise_error Ldp::HttpError
       end
 
       it "checks for 409 errors" do
-        expect { subject.put "conflict_resource", "some-payload" }.to raise_error Ldp::Conflict
+        expect { client.put "conflict_resource", "some-payload" }.to raise_error Ldp::Conflict
       end
 
       it "checks for 410 errors" do
-        expect { subject.get "deleted_resource" }.to raise_error Ldp::Gone
+        expect { client.get "deleted_resource" }.to raise_error Ldp::Gone
       end
 
       it "checks for 412 errors" do
-        expect { subject.put "mismatch_resource", "some-payload" }.to raise_error Ldp::PreconditionFailed
+        expect { client.put "mismatch_resource", "some-payload" }.to raise_error Ldp::PreconditionFailed
       end
     end
 
     it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.put "a_resource", "some-payload" do |req|
+      client.http.basic_auth('Aladdin', 'open sesame')
+      client.put "a_resource", "some-payload" do |req|
         expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
       end
     end
@@ -272,8 +264,8 @@ describe Ldp::Client do
   describe 'patch' do
 
     it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.patch "a_container", 'foo' do |req|
+      client.http.basic_auth('Aladdin', 'open sesame')
+      client.patch "a_container", 'foo' do |req|
         expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
       end
     end
@@ -282,31 +274,31 @@ describe Ldp::Client do
 
   describe "find_or_initialize" do
     it "should be a resource" do
-      resource = subject.find_or_initialize "a_resource"
+      resource = client.find_or_initialize "a_resource"
       expect(resource).to be_a_kind_of(Ldp::Resource)
     end
 
     it "should be a container" do
-      resource = subject.find_or_initialize "a_container"
+      resource = client.find_or_initialize "a_container"
       expect(resource).to be_a_kind_of(Ldp::Resource)
       expect(resource).to be_a_kind_of(Ldp::Container)
     end
 
     it "should be a binary resource" do
-      resource = subject.find_or_initialize "a_binary_resource"
+      resource = client.find_or_initialize "a_binary_resource"
       expect(resource).to be_a_kind_of(Ldp::Resource::BinarySource)
     end
   end
 
   describe "head" do
     it "treats temporary redirects as successful" do
-      expect { subject.head "temporary_redirect1" }.not_to raise_error
-      expect { subject.head "temporary_redirect2" }.not_to raise_error
+      expect { client.head "temporary_redirect1" }.not_to raise_error
+      expect { client.head "temporary_redirect2" }.not_to raise_error
     end
 
     it "treats permanent redirects as successful" do
-      expect { subject.head "permanent_redirect1" }.not_to raise_error
-      expect { subject.head "permanent_redirect2" }.not_to raise_error
+      expect { client.head "permanent_redirect1" }.not_to raise_error
+      expect { client.head "permanent_redirect2" }.not_to raise_error
     end
   end
 end

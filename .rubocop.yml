@@ -51,3 +51,6 @@ RSpec/DescribeClass:
 Style/Documentation:
   Enabled: false
 
+Style/StringLiterals:
+  EnforcedStyle: "double_quotes"
+

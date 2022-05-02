@@ -1,4 +1,4 @@
-require 'faraday'
+require "faraday"
 
 ##
 # HTTP client methods for making requests to an LDP resource and getting a response back.
@@ -6,8 +6,8 @@ module Ldp::Client::Methods
   def head(value)
     response = http.head do |request|
       url = build_url(value)
-
       request.url(url)
+
       yield request if block_given?
     end
 
@@ -18,11 +18,10 @@ module Ldp::Client::Methods
 
   # Get a LDP Resource by URI
   def get(value, options = {})
-    response = http.get do |request|
-      url = build_url(value)
-      request.url(url)
-      prefer_headers = ::Ldp::PreferHeaders.new
+    url = build_url(value)
+    prefer_headers = ::Ldp::PreferHeaders.new
 
+    response = http.get do |request|
       if options[:minimal]
         prefer_headers.return = "minimal"
       else
@@ -33,6 +32,7 @@ module Ldp::Client::Methods
         prefer_headers.omit = omits
       end
       request.headers["Prefer"] = prefer_headers.to_s
+      request.url(url)
 
       yield request if block_given?
     end
@@ -43,9 +43,12 @@ module Ldp::Client::Methods
   end
 
   # Delete a LDP Resource by URI
-  def delete url
+  def delete(value)
+    url = build_url(value)
+
     response = http.delete do |request|
-      request.url munge_to_relative_url(url)
+      request.url(url)
+
       yield request if block_given?
     end
 
@@ -53,11 +56,15 @@ module Ldp::Client::Methods
   end
 
   # Post TTL to an LDP Resource
-  def post(url, body = nil, headers = {})
+  def post(value, body = nil, headers = {})
+    url = build_url(value)
+    request_headers = default_headers.merge(headers)
+
     response = http.post do |request|
-      request.url munge_to_relative_url(url)
-      request.headers.merge!(default_headers).merge!(headers)
+      request.url(url)
+      request.headers.merge!(request_headers)
       request.body = body
+
       yield request if block_given?
     end
 
@@ -65,10 +72,13 @@ module Ldp::Client::Methods
   end
 
   # Update an LDP resource with TTL by URI
-  def put url, body, headers = {}
+  def put(value, body, headers = {})
+    url = build_url(value)
+    request_headers = default_headers.merge(headers)
+
     response = http.put do |request|
-      request.url munge_to_relative_url(url)
-      request.headers.merge!(default_headers).merge!(headers)
+      request.url(url)
+      request.headers.merge!(request_headers)
       request.body = body
       yield request if block_given?
     end
@@ -77,13 +87,17 @@ module Ldp::Client::Methods
   end
 
   # Update an LDP resource with TTL by URI
-  def patch url, body, headers = {}
+  def patch(value, body, headers = {})
+    url = build_url(value)
+    request_headers = default_headers.merge(headers)
+
     response = http.patch do |request|
       request.url munge_to_relative_url(url)
-      request.headers.merge!(default_patch_headers).merge!(headers)
+      request_headers = default_headers.merge(headers)
       request.body = body
       yield request if block_given?
     end
+
     check_for_errors(response)
   end
 
@@ -143,6 +157,8 @@ module Ldp::Client::Methods
     uri = URI.parse(value)
     uri.host = host if uri.host.nil?
     uri.port = port if uri.port.nil?
+
+    uri.path = "/#{uri.path}" unless uri.path.chars.first == "/"
 
     # Default to HTTP (this is for legacy support)
     if uri.scheme == "https"

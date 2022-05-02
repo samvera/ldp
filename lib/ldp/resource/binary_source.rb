@@ -6,7 +6,7 @@ module Ldp
     # @param subject [String] the URI for the resource
     # @param content_or_response [String,Ldp::Response]
     # @param base_path [String] ('')
-    def initialize client, subject, content_or_response = nil, base_path = ''
+    def initialize client, subject, content_or_response = nil, base_path = ""
       super
 
       case content_or_response

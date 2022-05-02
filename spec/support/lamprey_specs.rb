@@ -1,7 +1,7 @@
 require 'lamprey'
 
 RSpec.configure do |config|
-  config.before(:all, lamprey_server: true) do
+  config.before(:each, lamprey_server: true) do
     @runner = Ldp::Runner.new(RDF::Lamprey)
     @runner.boot
     @server = @runner.server
@@ -15,5 +15,9 @@ RSpec.configure do |config|
     end
 
     @client = Ldp::Client.new(@connection, repository: @repository)
+  end
+
+  config.after(:each, lamprey_server: true) do
+    @lamprey.helpers.class.quit!
   end
 end

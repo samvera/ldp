@@ -2,8 +2,8 @@
 # LDP client for presenting an ORM on top of an LDP resource
 module Ldp
   class Client
-    require 'ldp/client/methods'
-    require 'ldp/client/prefer_headers'
+    require "ldp/client/methods"
+    require "ldp/client/prefer_headers"
     include Ldp::Client::Methods
 
     attr_reader :http, :options, :repository

@@ -20,7 +20,7 @@ module Ldp
     end
 
     def graph
-      @graph ||= Ldp.instrument 'graph.orm.ldp', subject: subject_uri do
+      @graph ||= Ldp.instrument "graph.orm.ldp", subject: subject_uri do
         resource.graph
       end
     end
@@ -36,7 +36,7 @@ module Ldp
     def query *args, &block
       raise(ArgumentError, "Resource has no associated RDF Graph: #{resource}") if graph.nil?
 
-      Ldp.instrument 'query.orm.ldp', subject: subject_uri do
+      Ldp.instrument "query.orm.ldp", subject: subject_uri do
         graph.query *args, &block
       end
     end
@@ -44,13 +44,13 @@ module Ldp
     def reload
       @graph = nil
 
-      Ldp.instrument 'reload.orm.ldp', subject: subject_uri do
+      Ldp.instrument "reload.orm.ldp", subject: subject_uri do
         Ldp::Orm.new resource.reload
       end
     end
 
     def create
-      Ldp.instrument 'create.orm.ldp', subject: subject_uri do
+      Ldp.instrument "create.orm.ldp", subject: subject_uri do
         # resource.create returns a reloaded resource which causes any default URIs (e.g. "<>")
         # in the graph to be transformed to routable URIs
         Ldp::Orm.new resource.create
@@ -58,7 +58,7 @@ module Ldp
     end
 
     def save
-      Ldp.instrument 'save.orm.ldp', subject: subject_uri do
+      Ldp.instrument "save.orm.ldp", subject: subject_uri do
         response = create_or_update
 
         response.success?
@@ -71,14 +71,14 @@ module Ldp
       result = create_or_update
 
       if result.is_a? RDF::Enumerable
-        raise Ldp::GraphDifferenceException, 'Graph failed to persist', result
+        raise Ldp::GraphDifferenceException, "Graph failed to persist", result
       end
 
       result
     end
 
     def delete
-      Ldp.instrument 'delete.orm.ldp', subject: subject_uri do
+      Ldp.instrument "delete.orm.ldp", subject: subject_uri do
         resource.delete
       end
     end

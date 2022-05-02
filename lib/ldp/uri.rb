@@ -1,6 +1,6 @@
 module Ldp::Uri
   extend Deprecation
-  self.deprecation_horizon = 'ldp version 0.6'
+  self.deprecation_horizon = "ldp version 0.6"
 
   def uri str
     RDF::URI.new("http://www.w3.org/ns/ldp#") + str

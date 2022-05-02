@@ -1,8 +1,8 @@
-require 'rdf/turtle'
+require "rdf/turtle"
 
 module Ldp
   class Resource::RdfSource < Ldp::Resource
-    def initialize(client, subject, graph_or_response = nil, base_path = '')
+    def initialize(client, subject, graph_or_response = nil, base_path = "")
       super
 
       unless graph_or_response.nil?

@@ -1,7 +1,7 @@
 # coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
+lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'ldp/version'
+require "ldp/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "ldp"
@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "deprecation"
   spec.add_dependency "faraday"
   spec.add_dependency "http_logger"
-  spec.add_dependency "json-ld", '~> 3.2'
+  spec.add_dependency "json-ld", "~> 3.2"
   spec.add_dependency "nokogiri"
   spec.add_dependency "rdf-isomorphic"
   spec.add_dependency "rdf-ldp"
@@ -29,11 +29,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rdf-vocab", "~> 3.2"
   spec.add_dependency "slop"
 
-  spec.add_development_dependency 'async', '>= 1.25.0', '< 2'
-  spec.add_development_dependency 'bixby', '~> 3.0'
+  spec.add_development_dependency "async", ">= 1.25.0", "< 2"
+  spec.add_development_dependency "bixby", "~> 3.0"
   spec.add_development_dependency "bundler", ">= 2.0"
   spec.add_development_dependency "coveralls_reborn", "~> 0.24.0"
-  spec.add_development_dependency 'github_changelog_generator'
+  spec.add_development_dependency "github_changelog_generator"
   spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"

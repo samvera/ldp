@@ -1,8 +1,8 @@
 module Ldp
   class Container < Resource::RdfSource
-    require 'ldp/container/basic'
-    require 'ldp/container/direct'
-    require 'ldp/container/indirect'
+    require "ldp/container/basic"
+    require "ldp/container/direct"
+    require "ldp/container/indirect"
 
     def self.for(client, subject, data)
       case
@@ -54,11 +54,11 @@ module Ldp
         post_body = (graph_or_content.is_a?(RDF::Enumerable) ? graph_or_content.dump(:ttl) : graph_or_content)
 
         response = client.post subject, post_body do |request|
-          request.headers['Slug'] = slug
-          request.headers['Content-Type'] = 'text/turtle'
+          request.headers["Slug"] = slug
+          request.headers["Content-Type"] = "text/turtle"
         end
 
-        client.find_or_initialize(response.headers['Location'])
+        client.find_or_initialize(response.headers["Location"])
       end
     end
 
