@@ -13,7 +13,7 @@ module Ldp::Client::Methods
   end
 
   def head url
-    ActiveSupport::Notifications.instrument("http.ldp",
+    Ldp.instrument("http.ldp",
                  url: url, name: "HEAD", ldp_client: object_id) do
       resp = http.head do |req|
         req.url munge_to_relative_url(url)
@@ -29,7 +29,7 @@ module Ldp::Client::Methods
 
   # Get a LDP Resource by URI
   def get url, options = {}
-    ActiveSupport::Notifications.instrument("http.ldp",
+    Ldp.instrument("http.ldp",
                  url: url, name: "GET", ldp_client: object_id) do
       resp = http.get do |req|
         req.url munge_to_relative_url(url)
@@ -57,7 +57,7 @@ module Ldp::Client::Methods
 
   # Delete a LDP Resource by URI
   def delete url
-    ActiveSupport::Notifications.instrument("http.ldp",
+    Ldp.instrument("http.ldp",
                  url: url, name: "DELETE", ldp_client: object_id) do
       resp = http.delete do |req|
         req.url munge_to_relative_url(url)
@@ -70,7 +70,7 @@ module Ldp::Client::Methods
 
   # Post TTL to an LDP Resource
   def post url, body = nil, headers = {}
-    ActiveSupport::Notifications.instrument("http.ldp",
+    Ldp.instrument("http.ldp",
                  url: url, name: "POST", ldp_client: object_id) do
       resp = http.post do |req|
         req.url munge_to_relative_url(url)
@@ -84,7 +84,7 @@ module Ldp::Client::Methods
 
   # Update an LDP resource with TTL by URI
   def put url, body, headers = {}
-    ActiveSupport::Notifications.instrument("http.ldp",
+    Ldp.instrument("http.ldp",
                  url: url, name: "PUT", ldp_client: object_id) do
       resp = http.put do |req|
         req.url munge_to_relative_url(url)
@@ -98,7 +98,7 @@ module Ldp::Client::Methods
 
   # Update an LDP resource with TTL by URI
   def patch url, body, headers = {}
-    ActiveSupport::Notifications.instrument("http.ldp",
+    Ldp.instrument("http.ldp",
                  url: url, name: "PATCH", ldp_client: object_id) do
       resp = http.patch do |req|
         req.url munge_to_relative_url(url)
