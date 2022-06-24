@@ -104,9 +104,7 @@ module Ldp
     ##
     # Get the graph for the resource (or a blank graph if there is no metadata for the resource)
     def graph
-      @graph ||= begin
-        RDF::Graph.new << reader
-      end
+      @graph ||= RDF::Graph.new << reader
     end
 
     def reader(&block)
@@ -193,7 +191,7 @@ module Ldp
 
     def content_disposition_filename
       filename = content_disposition_attributes['filename']
-      URI.decode(filename) if filename
+      CGI.unescape(filename) if filename
     end
 
     private

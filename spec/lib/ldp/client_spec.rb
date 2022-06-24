@@ -1,5 +1,13 @@
 require 'spec_helper'
+
 describe "Ldp::Client" do
+  before(:all) do
+    WebMock.enable!
+  end
+
+  after(:all) do
+    WebMock.disable!
+  end
 
   let(:simple_graph) do
     graph = RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello, world!"]
@@ -44,9 +52,11 @@ describe "Ldp::Client" do
 
   end
 
-  subject do
+  subject(:ldp_client) do
     Ldp::Client.new mock_conn
   end
+
+  let(:http) { ldp_client.http }
 
   describe "initialize" do
     it "should accept an existing Faraday connection" do
@@ -193,12 +203,21 @@ describe "Ldp::Client" do
     end
 
     it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.post "a_container", 'foo' do |req|
-        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
-      end
-    end
+      stub_request(:post, "http://localhost/a_container").with(
+        body: "foo",
+      ).to_return(status: 200, body: "", headers: {})
 
+      ldp_client.initialize_http_client do |conn|
+        conn.request :authorization, :basic, 'Kevin Mitnick', 'hack the planet'
+      end
+
+      ldp_client.post "http://localhost/a_container", 'foo'
+
+      expect(a_request(:post, "http://localhost/a_container").with(body: "foo", headers: {
+        'Authorization'=>'Basic S2V2aW4gTWl0bmljazpoYWNrIHRoZSBwbGFuZXQ=',
+        'Content-Type'=>'text/turtle',
+      })).to have_been_made.once
+    end
   end
 
   describe "put" do
@@ -245,23 +264,41 @@ describe "Ldp::Client" do
     end
 
     it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.put "a_resource", "some-payload" do |req|
-        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
+      stub_request(:put, "http://localhost/a_resource").with(
+        body: "some-payload",
+      ).to_return(status: 200, body: "", headers: {})
+
+      ldp_client.initialize_http_client do |conn|
+        conn.request :authorization, :basic, 'Kevin Mitnick', 'hack the planet'
       end
+
+      ldp_client.put "http://localhost/a_resource", "some-payload"
+
+      expect(a_request(:put, "http://localhost/a_resource").with(body: "some-payload", headers: {
+        'Authorization'=>'Basic S2V2aW4gTWl0bmljazpoYWNrIHRoZSBwbGFuZXQ=',
+        'Content-Type'=>'text/turtle',
+      })).to have_been_made.once
     end
 
   end
 
   describe 'patch' do
-
     it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.patch "a_container", 'foo' do |req|
-        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
-      end
-    end
+      stub_request(:patch, "http://localhost/a_container").with(
+        body: "foo",
+      ).to_return(status: 200, body: "", headers: {})
 
+      ldp_client.initialize_http_client do |conn|
+        conn.request :authorization, :basic, 'Kevin Mitnick', 'hack the planet'
+      end
+
+      ldp_client.patch "http://localhost/a_container", "foo"
+
+      expect(a_request(:patch, "http://localhost/a_container").with(body: "foo", headers: {
+        'Authorization'=>'Basic S2V2aW4gTWl0bmljazpoYWNrIHRoZSBwbGFuZXQ=',
+        'Content-Type'=>'application/sparql-update',
+      })).to have_been_made.once
+    end
   end
 
   describe "find_or_initialize" do

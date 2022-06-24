@@ -10,6 +10,7 @@ module Ldp::Client::Methods
     else
       @http = Faraday.new *http_client
     end
+    yield @http if block_given?
   end
 
   def head url

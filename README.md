@@ -1,4 +1,4 @@
-# Ldp.rb
+# Linked Data Platform (LDP)
 
 Code:
 [![Build Status](https://circleci.com/gh/samvera/ldp.svg?style=svg)](https://circleci.com/gh/samvera/ldp)
@@ -17,13 +17,11 @@ Linked Data Platform client library for Ruby
 
 ## Product Owner & Maintenance
 
-**ldp** is a Core Component of the Samvera community. The documentation for
-what this means can be found
-[here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
+**ldp** is a Core Component of the Samvera community. The documentation for what this means can be found [here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
 
 ### Product Owner
 
-[randalldfloyd](https://github.com/randalldfloyd)
+[jrgriffiniii](https://github.com/jrgriffiniii)
 
 # Help
 
