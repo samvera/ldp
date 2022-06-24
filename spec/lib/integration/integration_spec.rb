@@ -1,8 +1,17 @@
 require 'spec_helper'
+
 require 'capybara_discoball'
 require 'derby/server'
 
 describe 'Integration tests' do
+  before(:all) do
+    WebMock.disable!
+  end
+
+  after(:all) do
+    WebMock.enable!
+  end
+
   let!(:derby_server) do
     Capybara::Discoball::Runner.new(Derby::Server).boot
   end
