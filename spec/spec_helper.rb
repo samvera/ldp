@@ -1,3 +1,5 @@
+ENV["environment"] ||= "test"
+
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
@@ -20,7 +22,13 @@ require 'ldp'
 require 'faraday'
 require 'active_support/notifications'
 
+# Dir[File.expand_path("../spec/support/**/*.rb", __FILE__)].each { |f| require f }
+require File.expand_path("../support/lando_env.rb", __FILE__)
+
 RSpec.configure do |config|
+  config.before(:each) do
+    # Ldp::Cleaner.clean!
+  end
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.

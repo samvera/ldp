@@ -7,19 +7,26 @@ describe Ldp::Orm do
     RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello, world!"]
   end
 
-  let(:conn_stubs) do
-    Faraday::Adapter::Test::Stubs.new do |stub|
-      stub.get('/a_resource') {[ 200, {"Link" => "<http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\", <http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, simple_graph.dump(:ttl) ]}
-      stub.head('/a_resource') { [200] }
-      stub.put("/a_resource") { [204]}
-    end
+  before do
+    stub_request(:get, "#{client_url}/a_resource").to_return( status: 200, headers: {
+      "Link" => ["<http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\"", "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""],
+    }, body: simple_graph.dump(:ttl) )
+    stub_request(:head, "#{client_url}/a_resource").to_return( status: 200, headers: {} )
+    stub_request(:put, "#{client_url}/a_resource").to_return( status: 204, headers: {} )
+
+    stub_request(:head, "#{client_url}/a_test_resource").to_return( status: 404, headers: {} )
+    stub_request(:put, "#{client_url}/a_test_resource").to_return( status: 201, headers: {} )
   end
 
+  let(:client_url) { "http://example.com" }
+  let(:resource_subject) { "a_test_resource" }
+
   let(:mock_conn) do
-    Faraday.new do |builder|
-      builder.adapter :test, conn_stubs do |stub|
-      end
-    end
+    #Faraday.new do |builder|
+    #  builder.adapter :test, conn_stubs do |stub|
+    #  end
+    #end
+    Faraday.new(url: client_url)
   end
 
   let :mock_client do
@@ -44,7 +51,7 @@ describe Ldp::Orm do
       end
     end
     let :test_resource do
-      Ldp::Resource::RdfSource.new mock_client, nil, simple_graph
+      Ldp::Resource::RdfSource.new(mock_client, resource_subject, simple_graph)
     end
     it "should return a new orm" do
       expect(subject.create).to be_kind_of Ldp::Orm
@@ -56,17 +63,23 @@ describe Ldp::Orm do
       expect(subject.save).to be true
     end
 
-    it "should return false if the response was not successful" do
-      conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
-      conn_stubs.put('/a_resource') {[412, nil, 'There was an error']}
-      expect(subject.save).to be false
+    context "when the response was not successful" do
+      before do
+        stub_request(:put, "#{client_url}/a_resource").to_return( status: 412, headers: {}, body: "There was an error" )
+      end
+
+      it "should return false if the response was not successful" do
+        expect(subject.save).to be false
+      end
     end
   end
 
   describe "#save!" do
+    before do
+      stub_request(:put, "#{client_url}/a_resource").to_return( status: 412, headers: {}, body: "Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'" )
+    end
+
     it "should raise an exception if the ETag didn't match" do
-      conn_stubs.instance_variable_get(:@stack)[:put] = [] # erases the stubs for :put
-      conn_stubs.put('/a_resource') {[412, {}, "Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'"]}
       expect { subject.save! }.to raise_exception(Ldp::PreconditionFailed, "Bad If-Match header value: 'ae43aa934dc4f4e15ea1b4dd1ca7a56791972836'")
     end
   end
@@ -78,16 +91,16 @@ describe Ldp::Orm do
   end
 
   describe "#reload" do
+    let(:old_value) { subject.value(RDF::Vocab::DC.title).first.to_s }
+    let(:updated_graph) { RDF::Graph.new << [RDF::URI.new(client_url), RDF::Vocab::DC.title, "Hello again, world!"] }
+
     before do
-      updated_graph = RDF::Graph.new << [RDF::URI.new(""), RDF::Vocab::DC.title, "Hello again, world!"]
-      conn_stubs.get('/a_resource') {[200,
-                                      {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\", <http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\"",
-                                       "ETag" => "new-tag"},
-                                      updated_graph.dump(:ttl)]}
+      old_value
+
+      stub_request(:get, "#{client_url}/a_resource").to_return( status: 200, headers: {"Link" => ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"", "<http://www.w3.org/ns/ldp#DirectContainer>;rel=\"type\""], "ETag" => "new-tag"}, body: updated_graph.dump(:ttl) )
     end
 
     it "loads the new values" do
-      old_value = subject.value(RDF::Vocab::DC.title).first.to_s
       reloaded = subject.reload
       expect(reloaded.value(RDF::Vocab::DC.title).first.to_s).not_to eq old_value
     end

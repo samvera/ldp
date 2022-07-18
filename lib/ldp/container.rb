@@ -4,14 +4,14 @@ module Ldp
     require 'ldp/container/direct'
     require 'ldp/container/indirect'
 
-    def self.for(client, subject, data)
+    def self.for(client, subject, data, base_path = '')
       case
       when data.types.include?(RDF::Vocab::LDP.IndirectContainer)
-        Ldp::Container::Indirect.new client, subject, data
+        Ldp::Container::Indirect.new(client, subject, data, base_path)
       when data.types.include?(RDF::Vocab::LDP.DirectContainer)
-        Ldp::Container::Direct.new client, subject, data
+        Ldp::Container::Direct.new(client, subject, data, base_path)
       else
-        Ldp::Container::Basic.new client, subject, data
+        Ldp::Container::Basic.new(client, subject, data, base_path)
       end
     end
 

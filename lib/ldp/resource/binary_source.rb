@@ -1,7 +1,5 @@
 module Ldp
   class Resource::BinarySource < Ldp::Resource
-    attr_accessor :content
-
     # @param client [Ldp::Client]
     # @param subject [String] the URI for the resource
     # @param content_or_response [String,Ldp::Response]
@@ -19,6 +17,11 @@ module Ldp
     # @return [Ldp::Response]
     def content
       @content ||= get.body
+    end
+
+    # Ensure that the content type specifies that the body is binary content
+    def default_create_headers
+      { "Content-Type" => "application/octet-stream" }
     end
 
     def described_by

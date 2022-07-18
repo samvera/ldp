@@ -85,8 +85,7 @@ module Ldp::Client::Methods
 
   # Update an LDP resource with TTL by URI
   def put url, body, headers = {}
-    Ldp.instrument("http.ldp",
-                 url: url, name: "PUT", ldp_client: object_id) do
+    Ldp.instrument("http.ldp", url: url, name: "PUT", ldp_client: object_id) do
       resp = http.put do |req|
         req.url munge_to_relative_url(url)
         req.headers.merge!(default_headers).merge!(headers)

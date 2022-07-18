@@ -18,13 +18,17 @@ module Ldp
       end
     end
 
-    def create
-      super do |req|
-        req.headers["Content-Type"] = "text/turtle"
-      end
+    def default_create_headers
+      return {} if content.nil?
+
+      {
+        "Content-Type" => "text/turtle"
+      }
     end
 
     def content
+      return if graph.empty?
+
       graph.dump(:ttl) if graph
     end
 
@@ -64,7 +68,7 @@ module Ldp
     protected
 
     def interaction_model
-      RDF::Vocab::LDP.Resource unless client.options[:omit_ldpr_interaction_model]
+      RDF::Vocab::LDP.RDFSource unless client.options[:omit_ldpr_interaction_model]
     end
 
     private
@@ -80,7 +84,10 @@ module Ldp
     # @param [Faraday::Response] graph query response
     # @return [RDF::Graph]
     def response_as_graph(resp)
-      build_empty_graph << resp.graph
+      empty_graph = build_empty_graph
+      return empty_graph unless resp.respond_to?(:graph)
+
+      empty_graph << resp.graph
     end
 
     ##

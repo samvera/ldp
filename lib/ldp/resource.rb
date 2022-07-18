@@ -6,20 +6,33 @@ module Ldp
     attr_reader :client, :subject
     attr_accessor :content
 
-    def self.for(client, subject, response)
+    def self.for(client, subject, response, base_path = '')
       case
       when response.container?
-        Ldp::Container.for client, subject, response
+        Ldp::Container.for(client, subject, response, base_path)
       when response.rdf_source?
-        Resource::RdfSource.new client, subject, response
+        Resource::RdfSource.new(client, subject, response, base_path)
       else
-        Resource::BinarySource.new client, subject, response
+        Resource::BinarySource.new(client, subject, response, base_path)
       end
     end
 
-    def initialize client, subject, response = nil, base_path = ''
+    def initialize(client, subject, response = nil, base_path = '')
       @client = client
-      @subject = subject
+
+      @subject = if subject.nil?
+                   subject
+                 else
+                   parsed_subject = URI.parse(subject)
+                   if parsed_subject.host.nil?
+                     base_segment = base_path.chomp("/")
+                     subject_segment = subject.gsub(/^\//, "")
+                     [base_segment, subject_segment].join("/")
+                   else
+                     subject
+                   end
+                 end
+
       @get = response if response.is_a? Faraday::Response and current? response
       @base_path = base_path
     end
@@ -30,10 +43,14 @@ module Ldp
       @subject_uri ||= RDF::URI(subject)
     end
 
+    def root?
+      subject_uri.to_s == "/"
+    end
+
     ##
     # Reload the LDP resource
     def reload
-      self.class.new client, subject, @get
+      self.class.new(client, subject, @get)
     end
 
     ##
@@ -45,21 +62,25 @@ module Ldp
     ##
     # Have we retrieved the content already?
     def retrieved_content?
-      @get
+      !!@get
     end
 
     ##
     # Get the resource
     def get
       @get ||= client.get(subject)
+    rescue Ldp::Gone
+      None
     end
 
     def head
       @head ||= begin
-        @get || client.head(subject)
+                  @get || client.head(subject)
                 rescue Ldp::NotFound
                   None
-      end
+                rescue Ldp::Gone
+                  None
+                end
     end
 
     ##
@@ -74,20 +95,37 @@ module Ldp
       new? ? create : update
     end
 
+    def default_create_headers
+      {}
+    end
+
     ##
     # Create a new resource at the URI
     # @return [RdfSource] the new representation
     # @raise [Ldp::Conflict] if you attempt to call create on an existing resource
     def create &block
       raise Ldp::Conflict, "Can't call create on an existing resource (#{subject})" unless new?
-      verb = subject.nil? ? :post : :put
-      resp = client.send(verb, (subject || @base_path), content) do |req|
-        req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
+      # verb = new? ? :post : :put
+      verb = new? ? :put : :post
+
+      create_content = content
+
+      request_url = subject || @base_path
+
+      create_headers = {}
+      create_headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
+      request_headers = default_create_headers.merge(create_headers)
+
+      resp = client.send(verb, request_url, create_content, request_headers) do |req|
+        # This is no longer being passed
+        # req.headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
+        # req.headers = default_create_headers.merge(req.headers)
+
         yield req if block_given?
       end
 
       @subject = resp.headers['Location']
-      @subject_uri = nil
+      subject_uri
       reload
     end
 
