@@ -86,6 +86,8 @@ Metrics/MethodLength:
 # Configuration parameters: CountComments.
 Metrics/ModuleLength:
   Max: 127
+  Exclude:
+    - 'lib/ldp/client/methods.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.

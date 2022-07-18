@@ -1,3 +1,4 @@
+---
 version: 2.1
 orbs:
   samvera: samvera/circleci-orb@1.0
@@ -10,20 +11,21 @@ jobs:
         type: string
       bundler_version:
         type: string
-        default: 2.0.1
+        default: 2.3.19
       ruby_type:
         type: string
         default: ruby
     executor:
-      name: 'samvera/ruby'
+      name: 'samvera/ruby_fcrepo_solr'
       ruby_version: << parameters.ruby_version >>
       ruby_type: << parameters.ruby_type >>
     environment:
       RAILS_VERSION: << parameters.rails_version >>
-    working_directory: ~/project
+      NOKOGIRI_USE_SYSTEM_LIBRARIES: 'true'
+    working_directory: ~/ldp
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install libgmp-dev
+      - run: sudo apt-get install -y libgmp-dev
 
       - samvera/cached_checkout
 
@@ -48,6 +50,15 @@ jobs:
 workflows:
   ci:
     jobs:
+      # Rails 6.1
+      - bundle_and_test:
+          name: ruby3-0_rails6-1
+          ruby_version: 3.0.4
+          rails_version: 6.1.6.1
+      - bundle_and_test:
+          name: ruby2-7_rails6-1
+          ruby_version: 2.7.6
+          rails_version: 6.1.6.1
       # Rails 6.0
       - bundle_and_test:
           name: ruby3-0_rails6-0
@@ -77,22 +88,35 @@ workflows:
                 - main
 
     jobs:
+      # Rails 6.1
+      - bundle_and_test:
+          name: ruby3-0_rails6-1
+          ruby_version: 3.0.4
+          rails_version: 6.1.6.1
+      - bundle_and_test:
+          name: ruby2-7_rails6-1
+          ruby_version: 2.7.6
+          rails_version: 6.1.6.1
       # Rails 6.0
       - bundle_and_test:
           name: ruby3-0_rails6-0
           ruby_version: 3.0.4
           rails_version: 6.0.5
+          bundler_version: '2.0.1'
       - bundle_and_test:
           name: ruby2-7_rails6-0
           ruby_version: 2.7.6
           rails_version: 6.0.5
+          bundler_version: '2.0.1'
       # Rails 5.2
       - bundle_and_test:
           name: ruby3-0_rails5-2
           ruby_version: 3.0.4
           rails_version: 5.2.8
+          bundler_version: '2.0.1'
       - bundle_and_test:
           name: ruby2-7_rails5-2
           ruby_version: 2.7.6
           rails_version: 5.2.8
+          bundler_version: '2.0.1'
 

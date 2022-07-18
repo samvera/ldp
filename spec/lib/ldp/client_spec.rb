@@ -19,6 +19,43 @@ describe "Ldp::Client" do
     graph.dump(:ttl)
   end
 
+  let(:client_url) { "http://example.com" }
+
+  before do
+      stub_request(:post, "#{client_url}/foo").to_return( status: 200, headers: {} )
+
+      stub_request(:head, "#{client_url}/bad_request_resource").to_return( status: 400, headers: {} )
+      stub_request(:get, "#{client_url}/bad_request_resource").to_return( status: 400, headers: {}, body: "The namespace prefix (fooooooo) has not been registered")
+
+      stub_request(:head, "#{client_url}/a_resource").to_return( status: 200, headers: {} )
+      stub_request(:get, "#{client_url}/a_resource").to_return( status: 200, headers: {"Link" => "<http://www.w3.org/ns/ldp#Resource>;rel=\"type\""}, body: simple_graph )
+
+      stub_request(:get, "#{client_url}/a_container").to_return( status: 200, headers: {"Link" => ["<http://www.w3.org/ns/ldp#Resource>;rel=\"type\"", "<http://www.w3.org/ns/ldp#BasicContainer>;rel=\"type\""]}, body: simple_container_graph )
+
+      stub_request(:head, "#{client_url}/a_binary_resource").to_return( status: 200, headers: {} )
+      stub_request(:get, "#{client_url}/a_binary_resource").to_return( status: 200, headers: {}, body: "" )
+
+      stub_request(:put, "#{client_url}/a_resource").to_return( status: 204, headers: {} )
+      stub_request(:delete, "#{client_url}/a_resource").to_return( status: 204, headers: {} )
+
+      stub_request(:head, "#{client_url}/a_container").to_return( status: 200, headers: {} )
+      stub_request(:post, "#{client_url}/a_container").to_return( status: 201, headers: {"Location" => "http://example.com/a_container/subresource"} )
+      stub_request(:patch, "#{client_url}/a_container").to_return( status: 201, headers: {"Location" => "http://example.com/a_container/subresource"} )
+
+      stub_request(:get, "#{client_url}/test:1").to_return( status: 200, headers: {} )
+
+      stub_request(:get, "http://test:8080/abc").to_return( status: 200, headers: {} )
+
+      stub_request(:put, "#{client_url}/mismatch_resource").to_return( status: 412, headers: {} )
+      stub_request(:put, "#{client_url}/forbidden_resource").to_return( status: 403, headers: {} )
+      stub_request(:put, "#{client_url}/conflict_resource").to_return( status: 409, headers: {} )
+      stub_request(:get, "#{client_url}/deleted_resource").to_return( status: 410, headers: {}, body: 'Gone' )
+      stub_request(:head, "#{client_url}/temporary_redirect1").to_return( status: 302, headers: {"Location" => "http://example.com/new"} )
+      stub_request(:head, "#{client_url}/temporary_redirect2").to_return( status: 307, headers: {"Location" => "http://example.com/new"} )
+      stub_request(:head, "#{client_url}/permanent_redirect1").to_return( status: 301, headers: {"Location" => "http://example.com/new"} )
+      stub_request(:head, "#{client_url}/permanent_redirect2").to_return( status: 308, headers: {"Location" => "http://example.com/new"} )
+  end
+
   let(:conn_stubs) do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
       stub.head('/a_resource') { [200] }
@@ -45,11 +82,11 @@ describe "Ldp::Client" do
   end
 
   let(:mock_conn) do
-    test = Faraday.new do |builder|
-      builder.adapter :test, conn_stubs do |stub|
-      end
-    end
-
+    #test = Faraday.new do |builder|
+    #  builder.adapter :test, conn_stubs do |stub|
+    #  end
+    #end
+    Faraday.new(url: client_url)
   end
 
   subject(:ldp_client) do

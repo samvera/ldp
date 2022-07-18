@@ -8,6 +8,18 @@ module Ldp
 
     attr_reader :options
 
+    def self.default_client_url
+      "#{ENV['FCREPO_SCHEME']}://#{ENV['FCREPO_HOST']}:#{ENV['FCREPO_PORT']}/rest/"
+    end
+
+    def self.default_http_client
+      Faraday.new(url: default_client_url)
+    end
+
+    def self.default
+      new(default_http_client)
+    end
+
     def initialize(*args)
       http_client, options = if args.length == 2
                                args
@@ -26,9 +38,25 @@ module Ldp
 
     # Find or initialize a new LDP resource by URI
     def find_or_initialize(subject, options = {})
-      data = get(subject, options)
+      subject_uri = URI.parse(subject)
+      request_url = if subject_uri.host.nil?
+                      base_segment = @http.url_prefix.to_s.chomp("/")
+                      subject_segment = if /^\//.match?(subject)
+                                          subject
+                                        else
+                                          "/#{subject}"
+                                        end
+                      "#{base_segment}#{subject_segment}"
+                    else
+                      subject
+                    end
+      data = get(request_url, options)
 
-      Ldp::Resource.for(self, subject, data)
+      Ldp::Resource.for(self, request_url, data)
+    rescue Ldp::NotFound
+      nil
+    rescue Ldp::Gone
+      nil
     end
 
     def logger

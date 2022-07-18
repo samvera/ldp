@@ -1,3 +1,5 @@
+ENV["environment"] ||= "test"
+
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
@@ -19,6 +21,9 @@ end
 require 'ldp'
 require 'faraday'
 require 'active_support/notifications'
+
+# Dir[File.expand_path("../spec/support/**/*.rb", __FILE__)].each { |f| require f }
+require File.expand_path("../support/lando_env.rb", __FILE__)
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
