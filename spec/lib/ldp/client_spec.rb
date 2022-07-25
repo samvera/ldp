@@ -41,7 +41,6 @@ describe "Ldp::Client" do
       builder.adapter :test, conn_stubs do |stub|
       end
     end
-
   end
 
   subject do
@@ -191,14 +190,6 @@ describe "Ldp::Client" do
     it "should accept a block to change the HTTP request" do
       expect { |b| subject.post "a_container", &b }.to yield_control
     end
-
-    it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.post "a_container", 'foo' do |req|
-        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
-      end
-    end
-
   end
 
   describe "put" do
@@ -243,25 +234,6 @@ describe "Ldp::Client" do
         expect { subject.put "mismatch_resource", "some-payload" }.to raise_error Ldp::PreconditionFailed
       end
     end
-
-    it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.put "a_resource", "some-payload" do |req|
-        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
-      end
-    end
-
-  end
-
-  describe 'patch' do
-
-    it "should preserve basic auth headers" do
-      subject.http.basic_auth('Aladdin', 'open sesame')
-      subject.patch "a_container", 'foo' do |req|
-        expect(req.headers).to include({ "Authorization" => "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" })
-      end
-    end
-
   end
 
   describe "find_or_initialize" do
