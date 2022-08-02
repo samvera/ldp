@@ -130,7 +130,6 @@ module Ldp
     # @raise [Ldp::Conflict] if you attempt to call create on an existing resource
     def create &block
       raise Ldp::Conflict, "Can't call create on an existing resource (#{subject})" unless new?
-      verb = new? ? :put : :post
 
       create_content = content
 
@@ -138,18 +137,20 @@ module Ldp
       create_headers["Link"] = "<#{interaction_model}>;rel=\"type\"" if interaction_model
       request_headers = default_create_headers.merge(create_headers)
 
-      request_url = if subject.nil?
-                      base_url
-                    else
-                      subject_url
-                    end
-
-      resp = client.send(verb, request_url, create_content, request_headers) do |req|
-        # Headers are no longer being passed in the request when set here
-        yield req if block_given?
+      if subject.nil?
+        request_url = base_url
+        verb = :post
+      else
+        request_url = subject_url
+        verb = :put
       end
 
-      @subject = resp.headers['Location']
+      response = client.send(verb, request_url, create_content, request_headers) do |request|
+        # Headers are no longer being passed in the request when set here
+        yield request if block_given?
+      end
+
+      @subject = response.headers['Location']
       subject_uri
       reload
     end
