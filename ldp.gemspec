@@ -12,14 +12,14 @@ Gem::Specification.new do |spec|
   spec.summary       = spec.description
   spec.homepage      = "https://github.com/projecthydra/ldp"
   spec.license       = "APACHE2"
-  spec.required_ruby_version = '~> 2.0'
+  spec.required_ruby_version = '>= 2.0'
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^spec/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "faraday"
+  spec.add_dependency "faraday", '>= 1'
   spec.add_dependency "rdf",            ">= 1.1"
   spec.add_dependency "rdf-turtle"
   spec.add_dependency "rdf-vocab",      ">= 0.8"
