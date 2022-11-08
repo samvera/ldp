@@ -1,29 +1,29 @@
-# Ldp.rb
+# ldp (Linked Data Platform)
 
 Code:
+[![Gem Version](https://badge.fury.io/rb/ldp.png)](http://badge.fury.io/rb/ldp)
 [![Build Status](https://circleci.com/gh/samvera/ldp.svg?style=svg)](https://circleci.com/gh/samvera/ldp)
-[![Version](https://badge.fury.io/rb/ldp.png)](http://badge.fury.io/rb/ldp)
-[![Coverage Status](https://coveralls.io/repos/github/samvera/ldp/badge.svg?branch=master)](https://coveralls.io/github/samvera/ldp?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/samvera/ldp/badge.svg?branch=main)](https://coveralls.io/github/samvera/ldp?branch=main)
 
 Docs:
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
 [![Apache 2.0 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE.txt)
 
-Jump In: [![Slack Status](http://slack.samvera.org/badge.svg)](http://slack.samvera.org/)
+Community Support: [![Samvera Community Slack](https://img.shields.io/badge/samvera-slack-blueviolet)](http://slack.samvera.org/)
 
-# What is ldp?
+# What is `ldp`?
 
-Linked Data Platform client library for Ruby
+[Linked Data Platform](https://www.w3.org/TR/ldp/) client library for Ruby
 
 ## Product Owner & Maintenance
 
-**ldp** is a Core Component of the Samvera community. The documentation for
-what this means can be found
-[here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
+`ldp` was a Core Component of the Samvera Community. Given a decline in available labor required for maintenance, this project no longer has a dedicated Product Owner. The documentation for what this means can be found [here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
 
 ### Product Owner
 
-[randalldfloyd](https://github.com/randalldfloyd)
+**Vacant**
+
+_Until a Product Owner has been identified, we ask that you please direct all requests for support, bug reports, and general questions to the [`#dev` Channel on the Samvera Slack](https://samvera.slack.com/app_redirect?channel=dev)._
 
 # Help
 
@@ -65,7 +65,7 @@ orm.save
 
 If you're working on PR for this project, create a feature branch off of `main`. 
 
-This repository follows the [Samvera Community Code of Conduct](https://samvera.atlassian.net/wiki/spaces/samvera/pages/405212316/Code+of+Conduct) and [language recommendations](https://github.com/samvera/maintenance/blob/master/templates/CONTRIBUTING.md#language).  Please ***do not*** create a branch called `master` for this repository or as part of your pull request; the branch will either need to be removed or renamed before it can be considered for inclusion in the code base and history of this repository.
+This repository follows the [Samvera Community Code of Conduct](https://samvera.atlassian.net/wiki/spaces/samvera/pages/405212316/Code+of+Conduct) and [language recommendations](https://github.com/samvera/maintenance/blob/main/templates/CONTRIBUTING.md#language).  Please ***do not*** create a branch called `main` for this repository or as part of your pull request; the branch will either need to be removed or renamed before it can be considered for inclusion in the code base and history of this repository.
 
 ## Testing:
 
@@ -86,7 +86,7 @@ This repository follows the [Samvera Community Code of Conduct](https://samvera.
   ```
   github_changelog_generator --user samvera --project ldp --token YOUR_GITHUB_TOKEN_HERE
   ```
-5. Commit these changes to the master branch
+5. Commit these changes to the main branch
 6. Run `rake release`
 
 # Acknowledgments
