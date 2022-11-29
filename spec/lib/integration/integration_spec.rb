@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 require 'capybara_discoball'
-require 'derby/server'
+require 'lamprey'
 
 describe 'Integration tests' do
   before(:all) do
@@ -12,20 +12,25 @@ describe 'Integration tests' do
     WebMock.enable!
   end
 
-  let!(:derby_server) do
-    Capybara::Discoball::Runner.new(Derby::Server).boot
+  let!(:ldp_server) do
+    Capybara::Discoball::Runner.new(RDF::Lamprey).boot
   end
 
   let(:debug) { ENV.fetch('DEBUG', false) }
 
   let(:client) do
-    Faraday.new(url: derby_server) do |faraday|
+    Faraday.new(url: ldp_server) do |faraday|
       faraday.response :logger if debug
       faraday.adapter Faraday.default_adapter
     end
   end
 
   subject { Ldp::Client.new client }
+
+  before do
+    # Initialize LDP server
+    subject.put "/", ""
+  end
 
   it 'creates resources' do
     subject.put '/rdf_source', ''
