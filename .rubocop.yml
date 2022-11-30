@@ -14,6 +14,10 @@ Bundler/DuplicatedGem:
   Exclude:
     - 'Gemfile'
 
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/ldp/client/methods.rb'
+
 Metrics/BlockLength:
   Exclude:
     - ldp.gemspec

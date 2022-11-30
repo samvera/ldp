@@ -1,11 +1,13 @@
 require 'ldp/version'
-require 'rdf/turtle'
-require 'json/ld'
-require 'rdf/isomorphic'
-require 'rdf/vocab/ldp'
-require 'logger'
-require 'singleton'
+
+require 'active_support'
 require 'deprecation'
+require 'json/ld'
+require 'logger'
+require 'rdf/isomorphic'
+require 'rdf/turtle'
+require 'rdf/vocab/ldp'
+require 'singleton'
 
 module Ldp
   RDF::Graph.send(:include, RDF::Isomorphic)

@@ -1,13 +1,17 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
-require 'simplecov'
 require 'coveralls'
+require 'pry-byebug'
+require 'rdf/vocab'
+require 'simplecov'
+require 'webmock/rspec'
 
-SimpleCov.formatter = 
-  SimpleCov::Formatter::MultiFormatter.new([SimpleCov::Formatter::HTMLFormatter,
-                                           Coveralls::SimpleCov::Formatter])
-    
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
+  SimpleCov::Formatter::HTMLFormatter,
+  Coveralls::SimpleCov::Formatter
+])
+
 SimpleCov.start do
   add_filter 'spec/'
 end
