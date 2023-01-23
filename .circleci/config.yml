@@ -10,7 +10,7 @@ jobs:
         type: string
       bundler_version:
         type: string
-        default: 2.0.1
+        default: 2.4.5
       ruby_type:
         type: string
         default: ruby
