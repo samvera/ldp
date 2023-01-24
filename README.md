@@ -91,4 +91,4 @@ This repository follows the [Samvera Community Code of Conduct](https://samvera.
 This software has been developed by and is brought to you by the Samvera community.  Learn more at the
 [Samvera website](http://samvera.org)
 
-![Samvera Logo](https://wiki.duraspace.org/download/thumbnails/87459292/samvera-fall-font2-200w.png?version=1&modificationDate=1498550535816&api=v2)
+![Samvera Logo](https://raw.githubusercontent.com/samvera/maintenance/main/assets/samvera_tree.png)
