@@ -17,13 +17,11 @@ Community Support: [![Samvera Community Slack](https://img.shields.io/badge/samv
 
 ## Product Owner & Maintenance
 
-`ldp` was a Core Component of the Samvera Community. Given a decline in available labor required for maintenance, this project no longer has a dedicated Product Owner. The documentation for what this means can be found [here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
+`ldp` is a Core Component of the Samvera Community. The documentation for what this means can be found [here](http://samvera.github.io/core_components.html#requirements-for-a-core-component).
 
 ### Product Owner
 
-**Vacant**
-
-_Until a Product Owner has been identified, we ask that you please direct all requests for support, bug reports, and general questions to the [`#dev` Channel on the Samvera Slack](https://samvera.slack.com/app_redirect?channel=dev)._
+[randalldfloyd](https://github.com/randalldfloyd)
 
 # Help
 
@@ -93,4 +91,4 @@ This repository follows the [Samvera Community Code of Conduct](https://samvera.
 This software has been developed by and is brought to you by the Samvera community.  Learn more at the
 [Samvera website](http://samvera.org)
 
-![Samvera Logo](https://wiki.duraspace.org/download/thumbnails/87459292/samvera-fall-font2-200w.png?version=1&modificationDate=1498550535816&api=v2)
+![Samvera Logo](https://raw.githubusercontent.com/samvera/maintenance/main/assets/samvera_tree.png)
