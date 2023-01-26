@@ -122,17 +122,18 @@ describe Ldp::Resource::RdfSource do
   describe '#graph' do
     context 'for a new object' do
       subject { Ldp::Resource::RdfSource.new mock_client, resource_subject }
+
       it do
         expect(subject.graph.size).to eql(0)
       end
     end
     context 'for an existing object' do
       subject { Ldp::Resource::RdfSource.new mock_client, "#{client_url}/existing_object" }
+
       it do
         expect(subject.graph.size).to eql(1)
       end
     end
-
     context 'with inlined resources' do
       subject { Ldp::Resource::RdfSource.new mock_client, "#{client_url}/existing_object" }
 
@@ -150,6 +151,20 @@ describe Ldp::Resource::RdfSource do
           .to contain_exactly(RDF::URI("#{client_url}/existing_object"))
       end
     end
+
+    context 'for a non-existing object' do
+      subject { Ldp::Resource::RdfSource.new(mock_client, "#{client_url}/invalid") }
+
+      before do
+        #stub_request(:head, "#{client_url}/invalid").to_return(status: 404, headers: { })
+        allow(mock_client).to receive(:head).and_raise(Ldp::NotFound)
+      end
+
+      it 'constructs an empty graph' do
+        expect(subject.graph.size).to eql(0)
+      end
+    end
+
   end
 
   context "When graph_class is overridden" do

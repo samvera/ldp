@@ -1,20 +1,13 @@
 require 'rdf/turtle'
 module Ldp
   class Resource::RdfSource < Ldp::Resource
-    def initialize client, subject, graph_or_response = nil, base_path = ''
+    def initialize(client, subject, graph_or_response = nil, base_path = '')
       super
 
-      case graph_or_response
-      when RDF::Enumerable
+      if graph_or_response.is_a?(RDF::Enumerable)
         @graph = graph_or_response
-      when Ldp::Response
-        # no-op
-        nil
-      when NilClass
-        # no-op
-        nil
-      else
-        raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}"
+      elsif !graph_or_response.nil?
+        raise(ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}") unless graph_or_response.respond_to?(:types)
       end
     end
 
@@ -33,16 +26,10 @@ module Ldp
     end
 
     def graph
-      @graph ||= begin
-                   if new?
-                     build_empty_graph
-                   else
-                     filtered_graph(response_graph)
-                   end
-                 rescue Ldp::NotFound
-                   # This is an optimization that lets us avoid doing HEAD + GET
-                   # when the object exists. We just need to handle the 404 case
+      @graph ||= if new?
                    build_empty_graph
+                 else
+                   filtered_graph(response_graph)
                  end
     end
 
