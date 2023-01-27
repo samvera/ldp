@@ -12,6 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary       = spec.description
   spec.homepage      = "https://github.com/samvera/ldp"
   spec.license       = "APACHE2"
+  spec.metadata      = { "rubygems_mfa_required" => "true" }
   spec.required_ruby_version = '>= 2.4'
 
   spec.files         = `git ls-files`.split($/)
