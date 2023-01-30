@@ -84,16 +84,21 @@ module Ldp::Client::Methods
   end
 
   # Update an LDP resource with TTL by URI
-  def put url, body, headers = {}
-    Ldp.instrument("http.ldp",
-                 url: url, name: "PUT", ldp_client: object_id) do
-      resp = http.put do |req|
-        req.url munge_to_relative_url(url)
-        req.headers.merge!(default_headers).merge!(headers)
-        req.body = body
-        yield req if block_given?
+  def put(url, body, headers = {})
+    Ldp.instrument("http.ldp", url: url, name: "PUT", ldp_client: object_id) do
+      request_url = munge_to_relative_url(url)
+      request_headers = default_headers.merge(headers)
+      request_body = if body.respond_to?(:read)
+                       body.read
+                     else
+                       body
+                     end
+
+      response = http.put(request_url, request_body, request_headers) do |request|
+        yield request if block_given?
       end
-      check_for_errors(resp)
+
+      check_for_errors(response)
     end
   end
 
@@ -153,7 +158,13 @@ module Ldp::Client::Methods
   # with an alternative scheme. If the scheme isn't HTTP(S), assume
   # they meant a relative URI instead.
   def munge_to_relative_url url
-    purl = URI.parse(url)
+    return if url.nil?
+
+    purl = if url.is_a?(URI)
+             url
+           else
+             URI.parse(url)
+           end
     if purl.absolute? and !((purl.scheme rescue nil) =~ /^http/)
       "./" + url
     else

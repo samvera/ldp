@@ -1,0 +1,20 @@
+name: ldp
+services:
+  ldp_fcrepo4:
+    type: compose
+    app_mount: false
+    volumes:
+      fcrepo4:
+    services:
+      image: samvera/fcrepo4:4.7.5
+      environment:
+        CATALINA_OPTS: "-Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+DisableExplicitGC"
+      command: /fedora-entrypoint.sh
+      ports:
+        - '8080:8080'
+      volumes:
+        - fcrepo4:/data
+    portforward: true
+proxy:
+  ldp_fcrepo4:
+    - ldp.fcrepo4.lndo.site:8080

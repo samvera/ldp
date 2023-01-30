@@ -3,8 +3,37 @@ require 'spec_helper'
 require 'rdf/vocab/dc'
 
 describe Ldp::Resource::RdfSource do
+  before(:all) do
+    WebMock.enable!
+  end
+
+  after(:all) do
+    WebMock.disable!
+  end
+
+  before do
+    stub_request(:post, "www.example.com").to_return(status: 200, headers: { })
+
+    stub_request(:post, "#{client_url}/") .to_return(status: 201, headers: { })
+
+    stub_request(:head, "#{client_url}/abs_url_object").to_return(status: 404, headers: { })
+    stub_request(:get, "#{client_url}/abs_url_object").to_return(status: 404, headers: { })
+    stub_request(:put, "#{client_url}/abs_url_object").to_return(status: 201, headers: { })
+    stub_request(:post, "#{client_url}/abs_url_object") .to_return(status: 201, headers: { })
+
+    stub_request(:head, "#{client_url}/existing_object").to_return(status: 200, headers: { 'Content-Type' => 'text/turtle' })
+    stub_request(:get, "#{client_url}/existing_object").to_return(status: 200, headers: { 'Content-Type'=>'text/turtle'}, body: simple_graph_source)
+
+    stub_request(:head, "#{client_url}/rdf_source").to_return(status: 200, headers: { })
+    stub_request(:get, "#{client_url}/rdf_source").to_return(status: 200, headers: { })
+
+    stub_request(:head, "#{client_url}/new_rdf_source").to_return(status: 404, headers: { })
+    stub_request(:get, "#{client_url}/new_rdf_source").to_return(status: 404, headers: { })
+    stub_request(:put, "#{client_url}/new_rdf_source").to_return(status: 201, headers: { })
+  end
+
   let(:simple_graph) do
-    RDF::Graph.new << [RDF::URI.new(), RDF::Vocab::DC.title, "Hello, world!"]
+    RDF::Graph.new << [RDF::URI.new(resource_subject), RDF::Vocab::DC.title, "Hello, world!"]
   end
 
   let(:simple_graph_source) do
@@ -12,32 +41,24 @@ describe Ldp::Resource::RdfSource do
     RDF::Writer.for(content_type:'text/turtle').dump(simple_graph,io)
     io.string
   end
-  let(:conn_stubs) do
-    Faraday::Adapter::Test::Stubs.new do |stub|
-      stub.post("/") { [201]}
-      stub.put("/abs_url_object") { [201]}
-      stub.head("/abs_url_object") {[404]}
-      stub.get("/abs_url_object") {[404]}
-      stub.head("/existing_object") {[200, {'Content-Type'=>'text/turtle'}]}
-      stub.get("/existing_object") {[200, {'Content-Type'=>'text/turtle'}, simple_graph_source]}
-    end
+
+  let(:client_url) do
+    "http://my.ldp.server"
   end
 
-  let(:mock_conn) do
-    Faraday.new url: "http://my.ldp.server/" do |builder|
-      builder.adapter :test, conn_stubs do |stub|
-      end
-    end
+  let(:http_client) do
+    Faraday.new(url: client_url)
   end
 
-  let :mock_client do
-    Ldp::Client.new mock_conn
+  let(:mock_client) do
+    Ldp::Client.new(http_client)
   end
 
+  let(:resource_subject) { "#{client_url}/rdf_source" }
 
   describe "#create" do
+    let(:rdf_source) { Ldp::Resource::RdfSource.new(mock_client, resource_subject) }
     subject { rdf_source }
-    let(:rdf_source) { Ldp::Resource::RdfSource.new mock_client, nil }
 
     context "if the resource already exists" do
       subject { rdf_source.create }
@@ -49,20 +70,24 @@ describe Ldp::Resource::RdfSource do
       end
     end
 
-    it "should return a new resource" do
-      created_resource = subject.create
-      expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
+    context "if the resource does not exist" do
+      let(:resource_subject) { "#{client_url}/new_rdf_source" }
+
+      it "should return a new resource" do
+        created_resource = subject.create
+        expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
+      end
     end
 
     it "should allow absolute URLs to the LDP server" do
-      obj = Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/abs_url_object"
+      obj = Ldp::Resource::RdfSource.new mock_client, "#{client_url}/abs_url_object"
       created_resource = obj.create
       expect(created_resource).to be_kind_of Ldp::Resource::RdfSource
     end
 
     describe 'basic containers' do
       it 'sends the requested interaction model' do
-        obj = Ldp::Container::Basic.new mock_client, "http://my.ldp.server/abs_url_object"
+        obj = Ldp::Container::Basic.new mock_client, "#{client_url}/abs_url_object"
         created_resource = obj.create
         expect(created_resource).to be_kind_of Ldp::Container::Basic
       end
@@ -70,7 +95,7 @@ describe Ldp::Resource::RdfSource do
 
     describe 'direct containers' do
       it 'sends the requested interaction model' do
-        obj = Ldp::Container::Direct.new mock_client, "http://my.ldp.server/abs_url_object"
+        obj = Ldp::Container::Direct.new mock_client, "#{client_url}/abs_url_object"
         created_resource = obj.create
         expect(created_resource).to be_kind_of Ldp::Container::Direct
       end
@@ -78,7 +103,7 @@ describe Ldp::Resource::RdfSource do
 
     describe 'indirect containers' do
       it 'sends the requested interaction model' do
-        obj = Ldp::Container::Indirect.new mock_client, "http://my.ldp.server/abs_url_object"
+        obj = Ldp::Container::Indirect.new mock_client, "#{client_url}/abs_url_object"
         created_resource = obj.create
         expect(created_resource).to be_kind_of Ldp::Container::Indirect
       end
@@ -88,7 +113,7 @@ describe Ldp::Resource::RdfSource do
   describe "#initialize" do
     context "with bad attributes" do
       it "should raise an error" do
-        expect{ Ldp::Resource::RdfSource.new mock_client, nil, "derp" }.to raise_error(ArgumentError,
+        expect{ Ldp::Resource::RdfSource.new mock_client, resource_subject, "derp" }.to raise_error(ArgumentError,
           "Third argument to Ldp::Resource::RdfSource.new should be a RDF::Enumerable or a Ldp::Response. You provided String")
       end
     end
@@ -96,20 +121,21 @@ describe Ldp::Resource::RdfSource do
 
   describe '#graph' do
     context 'for a new object' do
-      subject { Ldp::Resource::RdfSource.new mock_client, nil }
+      subject { Ldp::Resource::RdfSource.new mock_client, resource_subject }
+
       it do
         expect(subject.graph.size).to eql(0)
       end
     end
     context 'for an existing object' do
-      subject { Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/existing_object" }
+      subject { Ldp::Resource::RdfSource.new mock_client, "#{client_url}/existing_object" }
+
       it do
         expect(subject.graph.size).to eql(1)
       end
     end
-
     context 'with inlined resources' do
-      subject { Ldp::Resource::RdfSource.new mock_client, "http://my.ldp.server/existing_object" }
+      subject { Ldp::Resource::RdfSource.new mock_client, "#{client_url}/existing_object" }
 
       let(:simple_graph) do
         graph = RDF::Graph.new
@@ -122,9 +148,23 @@ describe Ldp::Resource::RdfSource do
 
       it do
         expect(subject.graph.subjects)
-          .to contain_exactly(RDF::URI('http://my.ldp.server/existing_object'))
+          .to contain_exactly(RDF::URI("#{client_url}/existing_object"))
       end
     end
+
+    context 'for a non-existing object' do
+      subject { Ldp::Resource::RdfSource.new(mock_client, "#{client_url}/invalid") }
+
+      before do
+        #stub_request(:head, "#{client_url}/invalid").to_return(status: 404, headers: { })
+        allow(mock_client).to receive(:head).and_raise(Ldp::NotFound)
+      end
+
+      it 'constructs an empty graph' do
+        expect(subject.graph.size).to eql(0)
+      end
+    end
+
   end
 
   context "When graph_class is overridden" do
@@ -143,14 +183,14 @@ describe Ldp::Resource::RdfSource do
       Object.send(:remove_const, :SpecialResource)
     end
 
-    subject { SpecialResource.new mock_client, nil }
+    subject { SpecialResource.new mock_client, resource_subject }
 
     it "should use the specified class" do
       expect(subject.graph).to be_a SpecialGraph
     end
 
     context "with a response body" do
-      subject { SpecialResource.new mock_client, "http://my.ldp.server/existing_object" }
+      subject { SpecialResource.new mock_client, "#{client_url}/existing_object" }
 
 
       it "should use the specified class" do

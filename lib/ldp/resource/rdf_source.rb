@@ -1,44 +1,35 @@
 require 'rdf/turtle'
 module Ldp
   class Resource::RdfSource < Ldp::Resource
-    def initialize client, subject, graph_or_response = nil, base_path = ''
+    def initialize(client, subject, graph_or_response = nil, base_path = '')
       super
 
-      case graph_or_response
-      when RDF::Enumerable
+      if graph_or_response.is_a?(RDF::Enumerable)
         @graph = graph_or_response
-      when Ldp::Response
-        # no-op
-        nil
-      when NilClass
-        # no-op
-        nil
-      else
-        raise ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}"
+      elsif !graph_or_response.nil?
+        raise(ArgumentError, "Third argument to #{self.class}.new should be a RDF::Enumerable or a Ldp::Response. You provided #{graph_or_response.class}") unless graph_or_response.respond_to?(:types)
       end
     end
 
-    def create
-      super do |req|
-        req.headers["Content-Type"] = "text/turtle"
-      end
+    def default_create_headers
+      return {} if content.nil?
+
+      {
+        "Content-Type" => "text/turtle"
+      }
     end
 
     def content
+      return if graph.empty?
+
       graph.dump(:ttl) if graph
     end
 
     def graph
-      @graph ||= begin
-                   if subject.nil?
-                     build_empty_graph
-                   else
-                     filtered_graph(response_graph)
-                   end
-                 rescue Ldp::NotFound
-                   # This is an optimization that lets us avoid doing HEAD + GET
-                   # when the object exists. We just need to handle the 404 case
+      @graph ||= if new?
                    build_empty_graph
+                 else
+                   filtered_graph(response_graph)
                  end
     end
 
@@ -64,7 +55,7 @@ module Ldp
     protected
 
     def interaction_model
-      RDF::Vocab::LDP.Resource unless client.options[:omit_ldpr_interaction_model]
+      RDF::Vocab::LDP.RDFSource unless client.options[:omit_ldpr_interaction_model]
     end
 
     private
@@ -80,7 +71,10 @@ module Ldp
     # @param [Faraday::Response] graph query response
     # @return [RDF::Graph]
     def response_as_graph(resp)
-      build_empty_graph << resp.graph
+      empty_graph = build_empty_graph
+      return empty_graph unless resp.respond_to?(:graph)
+
+      empty_graph << resp.graph
     end
 
     ##
