@@ -33,7 +33,7 @@ module Ldp
       # slug
 
       case
-      when (args.length > 2 || args.length == 0)
+      when args.length > 2 || args.length == 0
 
       when (args.length == 2)
         slug, graph_or_content = args

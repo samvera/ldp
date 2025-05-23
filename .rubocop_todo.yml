@@ -98,9 +98,11 @@ Performance/StringReplacement:
 # Configuration parameters: EnforceForPrefixed.
 Rails/Delegate:
   Exclude:
+    - 'lib/ldp/client.rb'
     - 'lib/ldp/client/prefer_headers.rb'
     - 'lib/ldp/orm.rb'
     - 'lib/ldp/response.rb'
+    - 'lib/ldp/uri.rb'
 
 # Offense count: 4
 # Cop supports --auto-correct.
