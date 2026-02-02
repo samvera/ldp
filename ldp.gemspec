@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "faraday", '>= 1'
   spec.add_dependency "http_logger"
   spec.add_dependency "json-ld", "~> 3.2"
-  spec.add_dependency "rdf", "~> 3.2"
+  spec.add_dependency "rdf", "~> 3.2", ">= 3.3.2"
   spec.add_dependency "rdf-isomorphic"
   spec.add_dependency "rdf-ldp", ">= 2.1"
   spec.add_dependency "rdf-turtle"
