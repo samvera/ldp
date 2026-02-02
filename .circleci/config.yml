@@ -48,6 +48,11 @@ jobs:
 workflows:
   ci:
     jobs:
+      # Rails 8.1
+      - bundle_and_test:
+          name: ruby4-0_rails8-1
+          ruby_version: 4.0.1
+          rails_version: 8.1.2
       # Rails 8.0
       - bundle_and_test:
           name: ruby3-4_rails8-0
@@ -69,6 +74,11 @@ workflows:
                 - main
 
     jobs:
+      # Rails 8.1
+      - bundle_and_test:
+          name: ruby4-0_rails8-1
+          ruby_version: 4.0.1
+          rails_version: 8.1.2
       # Rails 8.0
       - bundle_and_test:
           name: ruby3-4_rails8-0
